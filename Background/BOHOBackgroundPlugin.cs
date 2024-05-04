@@ -71,7 +71,7 @@ namespace BOHO.Background
         /// </summary>
         public override List<EnvironmentType> TargetEnvironments
         {
-            get { return new List<EnvironmentType>() { EnvironmentType.SmartClient }; } // Default will run in the Event Server
+            get { return [EnvironmentType.SmartClient]; }
         }
 
         /// <summary>

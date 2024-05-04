@@ -115,7 +115,6 @@
     </Compile>
     <Compile Include="Application\Util\ShapeUtil.cs" />
     <Compile Include="Application\ViewModel\ViewItemToolbarPluginViewModel.cs" />
-    <Compile Include="Application\ViewModel\ViewModelBase.cs" />
     <Compile Include="Background\BOHOBackgroundPlugin.cs" />
     <Compile Include="Client\BOHOPropertiesWpfUserControl.xaml.cs">
       <DependentUpon>BOHOPropertiesWpfUserControl.xaml</DependentUpon>
