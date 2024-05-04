@@ -1,0 +1,45 @@
+﻿<client:ToolbarPluginWpfUserControl 
+    x:Class="BOHO.Client.ViewItemToolbarPluginWpfUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:entities="clr-namespace:BOHO.Core.Entities"
+    xmlns:client="clr-namespace:VideoOS.Platform.Client;assembly=VideoOS.Platform"
+    xmlns:controls="clr-namespace:VideoOS.Platform.UI.Controls;assembly=VideoOS.Platform">
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <Menu Background="Transparent">
+                <controls:VideoOSContextMenuItem ItemsSource="{Binding Nodes}" Click="OnCameraSelected">
+                    <controls:VideoOSContextMenuItem.Header>
+                        <controls:VideoOSTextBlockBody1 Text="{Binding SelectedDevice.Name, UpdateSourceTrigger=PropertyChanged}" Width="150"/>
+                    </controls:VideoOSContextMenuItem.Header>
+                    <controls:VideoOSContextMenuItem.Resources>
+                        <HierarchicalDataTemplate DataType="{x:Type entities:Node}" ItemsSource="{Binding Devices}">
+                            <controls:VideoOSTextBlockBody1 Text="{Binding Name}"/>
+                        </HierarchicalDataTemplate>
+                        <HierarchicalDataTemplate DataType="{x:Type entities:Device}">
+                            <controls:VideoOSTextBlockBody1 Text="{Binding Name}"/>
+                        </HierarchicalDataTemplate>
+                    </controls:VideoOSContextMenuItem.Resources>
+                </controls:VideoOSContextMenuItem>
+            </Menu>
+        </StackPanel>
+        <Separator/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <controls:VideoOSCheckBoxSmall IsChecked="{Binding PtzEnabled}" Command="{Binding ChangeDeviceServiceStatusCommand}"/>
+            <controls:VideoOSTextBlockBody1 Text="Bật/tắt PTZ" Margin="10 0 0 0"/>
+        </StackPanel>
+        <Separator/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <controls:VideoOSCheckBoxSmall IsChecked="{Binding BoundingBoxEnabled}" Command="{Binding ChangeBoundingBoxVisibilityCommand}"/>
+            <controls:VideoOSTextBlockBody1 Text="Hiện/ẩn bounding box" Margin="10 0 0 0"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <controls:VideoOSCheckBoxSmall IsChecked="{Binding RuleEnabled}" Command="{Binding ChangeRuleVisibilityCommand}"/>
+            <controls:VideoOSTextBlockBody1 Text="Hiện/ẩn quy tắc" Margin="10 0 0 0"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <controls:VideoOSCheckBoxSmall IsChecked="{Binding RuleNameEnabled}" Command="{Binding ChangeRuleNameVisibilityCommand}"/>
+            <controls:VideoOSTextBlockBody1 Text="Hiện/ẩn tên quy tắc" Margin="10 0 0 0"/>
+        </StackPanel>
+    </StackPanel>
+</client:ToolbarPluginWpfUserControl>

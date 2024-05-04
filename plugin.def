@@ -1,0 +1,4 @@
+<plugin>
+  <file name="BOHO.dll"/>
+  <load env="SmartClient"/>
+</plugin>
