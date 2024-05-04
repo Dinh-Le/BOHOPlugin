@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using BOHO.Core.Entities;
 
@@ -29,19 +30,15 @@ namespace BOHO.Application.Util
 
         public static Shape FromRule(Rule rule)
         {
-            var polygon = new Polygon();
+            var fillColor = (Color)ColorConverter.ConvertFromString("#FFFF7F");
+            var polygon = new Polygon() { Fill = new SolidColorBrush(fillColor) { Opacity = 0.2 } };
 
             foreach (var point in rule.Points)
             {
                 polygon.Points.Add(new Point { X = point[0], Y = point[1] });
             }
 
-            return new Path
-            {
-                Data = polygon.RenderedGeometry,
-                Stroke = Brushes.Red,
-                StrokeThickness = 2
-            };
+            return polygon;
         }
     }
 }

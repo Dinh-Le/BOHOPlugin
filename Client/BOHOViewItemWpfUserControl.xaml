@@ -1,25 +1,29 @@
 <platformclient:ViewItemWpfUserControl x:Class="BOHO.Client.BOHOViewItemWpfUserControl"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:platformclient="clr-namespace:VideoOS.Platform.Client;assembly=VideoOS.Platform"
-    mc:Ignorable="d" 
-    d:DesignHeight="300" d:DesignWidth="300" MouseDown="ViewItemWpfUserControl_MouseDown" MouseDoubleClick="ViewItemWpfUserControl_MouseDoubleClick">
+                                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                                       xmlns:platformclient="clr-namespace:VideoOS.Platform.Client;assembly=VideoOS.Platform"
+                                       mc:Ignorable="d"
+                                       d:DesignHeight="300"
+                                       d:DesignWidth="300"
+                                       MouseDown="ViewItemWpfUserControl_MouseDown"
+                                       MouseDoubleClick="ViewItemWpfUserControl_MouseDoubleClick">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="18"/>
-            <RowDefinition Height="18"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="18" />
+            <RowDefinition Height="18" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="17"/>
-                <ColumnDefinition Width="83"/>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="17" />
+                <ColumnDefinition Width="83" />
             </Grid.ColumnDefinitions>
         </Grid>
-        <platformclient:ImageViewerWpfControl Grid.Row="2" x:Name="_imageViewer" MinHeight="100"/>
-
+        <platformclient:ImageViewerWpfControl Grid.Row="2"
+                                              x:Name="_imageViewer"
+                                              MinHeight="100" />
     </Grid>
 </platformclient:ViewItemWpfUserControl>

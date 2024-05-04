@@ -40,7 +40,7 @@ namespace BOHO.Core.Entities
         public string AlarmType { get; set; }
 
         [JsonProperty("points")]
-        public int[][] Points { get; set; }
+        public double[][] Points { get; set; }
 
         [JsonProperty("level")]
         public int Level { get; set; }

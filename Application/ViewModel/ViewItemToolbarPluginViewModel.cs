@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BOHO.Client;
 using BOHO.Core.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,7 +12,7 @@ using VideoOS.Platform.Messaging;
 
 namespace BOHO.Application.ViewModel
 {
-    public partial class ViewItemToolbarPluginViewModel : ObservableObject
+    public partial class ViewItemToolbarPluginViewModel : ObservableObject, IDisposable
     {
         private bool boundingBoxEnabled;
         public bool BoundingBoxEnabled
@@ -53,7 +56,11 @@ namespace BOHO.Application.ViewModel
             set => SetProperty(ref ptzEnabled, value);
         }
 
+        public FQID WindowFQID { set; get; }
+        public FQID ViewItemInstanceFQID { set; get; }
+
         private readonly IBOHORepository _bohoRepository;
+        private object _deviceStatusHandleId;
 
         public ViewItemToolbarPluginViewModel(IBOHORepository bohoRepository)
         {
@@ -64,6 +71,55 @@ namespace BOHO.Application.ViewModel
             this.PtzEnabled = false;
             this.SelectedDevice = new Core.Entities.Device { ID = -1, Name = "Chọn camera" };
             this._bohoRepository = bohoRepository;
+        }
+
+        private object OnDeviceStatusChanged(Message message, FQID sender, FQID related)
+        {
+            PtzEnabled = (bool)message.Data;
+            return null;
+        }
+
+        [RelayCommand()]
+        private async Task SelectDevice(
+            Core.Entities.Device device,
+            CancellationToken cancellationToken
+        )
+        {
+            if (device.ID == this.SelectedDevice.ID)
+            {
+                return;
+            }
+
+            this.SelectedDevice = device;
+
+            if (this._deviceStatusHandleId != null)
+            {
+                EnvironmentManager.Instance.UnRegisterReceiver(this._deviceStatusHandleId);
+            }
+
+            var topic = $"/device/{device.ID}/status";
+            this._deviceStatusHandleId = EnvironmentManager.Instance.RegisterReceiver(
+                OnDeviceStatusChanged,
+                new MessageIdFilter(topic)
+            );
+
+            var message = new Message("/device")
+            {
+                Data = new SetDeviceMessage
+                {
+                    Device = device,
+                    ViewItemInstanceFQID = ViewItemInstanceFQID,
+                    WindowFQID = WindowFQID
+                }
+            };
+            var handlerTasks = EnvironmentManager
+                .Instance.SendMessage(message)
+                .Where(obj => obj is Task)
+                .Select(task => (Task)task);
+            foreach (var task in handlerTasks)
+            {
+                await task;
+            }
         }
 
         [RelayCommand(CanExecute = nameof(CanChangeDeviceServiceStatus))]
@@ -97,7 +153,7 @@ namespace BOHO.Application.ViewModel
             EnvironmentManager.Instance.SendMessage(
                 new Message($"/device/{this.SelectedDevice.ID}/bounding_visibility")
                 {
-                    Data = this.RuleEnabled
+                    Data = this.BoundingBoxEnabled
                 }
             );
         }
@@ -108,14 +164,20 @@ namespace BOHO.Application.ViewModel
         }
 
         [RelayCommand(CanExecute = nameof(CanChangeRuleVisibility))]
-        private void ChangeRuleVisibility()
+        private async Task ChangeRuleVisibility()
         {
-            EnvironmentManager.Instance.SendMessage(
-                new Message($"/device/{this.SelectedDevice.ID}/rule_visibility")
-                {
-                    Data = this.RuleEnabled
-                }
-            );
+            var tasks = EnvironmentManager
+                .Instance.SendMessage(
+                    new Message($"/device/{this.SelectedDevice.ID}/rule_visibility")
+                    {
+                        Data = this.RuleEnabled
+                    }
+                )
+                .Where(task => task is Task);
+            foreach (var task in tasks)
+            {
+                await (Task)task;
+            }
         }
 
         private bool CanChangeRuleVisibility()
@@ -129,7 +191,7 @@ namespace BOHO.Application.ViewModel
             EnvironmentManager.Instance.SendMessage(
                 new Message($"/device/{this.SelectedDevice.ID}/rule_name_visibility")
                 {
-                    Data = this.RuleEnabled
+                    Data = this.RuleNameEnabled
                 }
             );
         }
@@ -137,6 +199,15 @@ namespace BOHO.Application.ViewModel
         private bool CanChangeRuleNameVisibility()
         {
             return this.SelectedDevice.ID > 0;
+        }
+
+        public void Dispose()
+        {
+            if (this._deviceStatusHandleId is not null)
+            {
+                EnvironmentManager.Instance.UnRegisterReceiver(this._deviceStatusHandleId);
+                this._deviceStatusHandleId = null;
+            }
         }
     }
 }

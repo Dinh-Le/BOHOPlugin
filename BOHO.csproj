@@ -231,6 +231,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>rem xcopy /y "$(TargetPath)" "C:\Program Files\Milestone\XProtect Smart Client\MIPPlugins\$(TargetName)"</PostBuildEvent>
+    <PostBuildEvent>xcopy /y "$(TargetPath)" "C:\Program Files\Milestone\XProtect Smart Client\MIPPlugins\$(TargetName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
