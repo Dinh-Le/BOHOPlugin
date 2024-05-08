@@ -52,7 +52,17 @@ namespace BOHO.Background
         public override void Init()
         {
             this._cancellationTokenSource = new CancellationTokenSource();
-            this._task = new Task(async () => await RunAsync(), _cancellationTokenSource.Token);
+            this._task = new Task(
+                async () =>
+                {
+                    try
+                    {
+                        await RunAsync(_cancellationTokenSource.Token);
+                    }
+                    catch (TaskCanceledException) { }
+                },
+                _cancellationTokenSource.Token
+            );
             this._task.Start();
         }
 
@@ -77,7 +87,7 @@ namespace BOHO.Background
         /// <summary>
         /// the thread doing the work
         /// </summary>
-        private async Task RunAsync()
+        private async Task RunAsync(CancellationToken cancellationToken)
         {
             var eventListener = Core.RootContainer.Get<Core.EventListener>();
             await eventListener.Initialize();
@@ -88,7 +98,7 @@ namespace BOHO.Background
 
             await bohoRepo.Synchronize();
 
-            while (!_cancellationTokenSource.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 var devices = bohoRepo.Nodes.SelectMany(node => node.Devices).ToList();
 
@@ -110,7 +120,7 @@ namespace BOHO.Background
                     }
                 }
 
-                await Task.Delay(3000, this._cancellationTokenSource.Token);
+                await Task.Delay(3000, cancellationToken);
             }
         }
     }
