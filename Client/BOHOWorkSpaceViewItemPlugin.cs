@@ -24,12 +24,12 @@ namespace BOHO.Client
 
         public override string Name
         {
-            get { return "WorkSpace Plugin View Item"; }
+            get { return "BOHO Website"; }
         }
 
         public override bool HideSetupItem
         {
-            get { return false; }
+            get { return true; }
         }
 
         public override ViewItemManager GenerateViewItemManager()
