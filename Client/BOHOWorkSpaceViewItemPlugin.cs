@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using VideoOS.Platform.Client;
 
 namespace BOHO.Client
@@ -33,10 +29,7 @@ namespace BOHO.Client
 
         public override bool HideSetupItem
         {
-            get
-            {
-                return false;
-            }
+            get { return false; }
         }
 
         public override ViewItemManager GenerateViewItemManager()
@@ -44,14 +37,8 @@ namespace BOHO.Client
             return new BOHOWorkSpaceViewItemManager();
         }
 
-        public override void Init()
-        {
-        }
+        public override void Init() { }
 
-        public override void Close()
-        {
-        }
-
-
+        public override void Close() { }
     }
 }

@@ -23,6 +23,7 @@ namespace BOHO.Core
         private bool _isInitialized;
 
         public event Action<BOHOEventData> EventReceived;
+
         private class EventData
         {
             [JsonProperty("status")]
@@ -47,16 +48,17 @@ namespace BOHO.Core
             public int PresetId { get; set; }
         }
 
-
         public EventListener()
-        {          
+        {
             this._mqttClient = new MqttFactory().CreateManagedMqttClient();
-            this._mqttClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
+            this._mqttClient.ApplicationMessageReceivedAsync +=
+                MqttClient_ApplicationMessageReceivedAsync;
         }
 
         public void Dispose()
         {
-            this._mqttClient.ApplicationMessageReceivedAsync -= MqttClient_ApplicationMessageReceivedAsync;
+            this._mqttClient.ApplicationMessageReceivedAsync -=
+                MqttClient_ApplicationMessageReceivedAsync;
             this._mqttClient.Dispose();
         }
 
@@ -68,16 +70,13 @@ namespace BOHO.Core
             }
 
             var topicFilter = new MqttTopicFilterBuilder().WithTopic(MqttTopic).Build();
-            await this._mqttClient.SubscribeAsync(new List<MqttTopicFilter>
-            {
-                topicFilter
-            });
+            await this._mqttClient.SubscribeAsync(new List<MqttTopicFilter> { topicFilter });
 
             // Setup and start a managed MQTT client.
             var clientOptions = new MqttClientOptionsBuilder()
-                    .WithClientId("MilestonePluginClient-"+ Guid.NewGuid().ToString())
-                    .WithTcpServer(MqttHost, MqttPort)
-                    .Build();
+                .WithClientId("MilestonePluginClient-" + Guid.NewGuid().ToString())
+                .WithTcpServer(MqttHost, MqttPort)
+                .Build();
             var options = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
                 .WithClientOptions(clientOptions)
@@ -85,9 +84,13 @@ namespace BOHO.Core
             await this._mqttClient.StartAsync(options);
         }
 
-        private Task MqttClient_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
+        private Task MqttClient_ApplicationMessageReceivedAsync(
+            MqttApplicationMessageReceivedEventArgs arg
+        )
         {
-            var payloadString = Encoding.UTF8.GetString(arg.ApplicationMessage.PayloadSegment.ToArray());
+            var payloadString = Encoding.UTF8.GetString(
+                arg.ApplicationMessage.PayloadSegment.ToArray()
+            );
 
             try
             {
@@ -97,8 +100,8 @@ namespace BOHO.Core
                     DeviceId = eventData.CameraId,
                     DeviceName = eventData.CameraName,
                     PresetId = eventData.PresetId,
-                    BoundingBoxes = eventData.Det
-                        .Select(det =>
+                    BoundingBoxes = eventData
+                        .Det.Select(det =>
                         {
                             double x = det[0] / ImageWidth;
                             double y = det[1] / ImageHeight;

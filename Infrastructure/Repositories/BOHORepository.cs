@@ -90,7 +90,7 @@ namespace BOHO.Infrastructure.Repositories
             using (var httpClient = this._httpClientFactory.CreateClient())
             {
                 var getNodesUrl =
-                    $"http://{_configuration.IP}:{_configuration.Port}/api/rest/v1/node";
+                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node";
                 var getNodesResponse = await this.GetJson<Response<List<Node>>>(
                     httpClient,
                     getNodesUrl
@@ -103,7 +103,7 @@ namespace BOHO.Infrastructure.Repositories
                 {
                     var deviceList = new List<Core.Entities.Device>();
                     var getDevicesUrl =
-                        $"http://{_configuration.IP}:{_configuration.Port}/api/rest/v1/node/{node.Id}/device";
+                        $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{node.Id}/device";
                     var getDevicesResponse = await this.GetJson<Response<List<Device>>>(
                         httpClient,
                         getDevicesUrl
@@ -112,7 +112,7 @@ namespace BOHO.Infrastructure.Repositories
                     foreach (var device in getDevicesResponse.Data)
                     {
                         var getIntegrationsUrl =
-                            $"http://{_configuration.IP}:{_configuration.Port}/api/rest/v1/node/{node.Id}/device/{device.Id}/intergrate";
+                            $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{node.Id}/device/{device.Id}/intergrate";
                         var getIntegrationsResponse = await this.GetJson<
                             Response<List<Integration>>
                         >(httpClient, getIntegrationsUrl);
@@ -162,7 +162,7 @@ namespace BOHO.Infrastructure.Repositories
                     }
                 );
                 var response = await httpClient.PostAsync(
-                    $"http://{_configuration.IP}:{_configuration.Port}/api/rest/v1/login",
+                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/login",
                     new StringContent(payloadString)
                 );
                 response.EnsureSuccessStatusCode();
@@ -179,7 +179,7 @@ namespace BOHO.Infrastructure.Repositories
             using (var httpClient = this._httpClientFactory.CreateClient())
             {
                 var url =
-                    $"http://{_configuration.IP}:{_configuration.Port}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/resume_device";
+                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/resume_device";
                 await this.GetJson<Response<bool>>(httpClient, url);
             }
         }
@@ -189,7 +189,7 @@ namespace BOHO.Infrastructure.Repositories
             using (var httpClient = this._httpClientFactory.CreateClient())
             {
                 var url =
-                    $"http://{_configuration.IP}:{_configuration.Port}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/pause_device";
+                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/pause_device";
                 await this.GetJson<Response<bool>>(httpClient, url);
             }
         }
@@ -199,7 +199,7 @@ namespace BOHO.Infrastructure.Repositories
             using (var httpClient = this._httpClientFactory.CreateClient())
             {
                 var url =
-                    $"http://{_configuration.IP}:{_configuration.Port}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/service_status";
+                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/service_status";
                 var response = await this.GetJson<Response<bool>>(httpClient, url);
                 return response.Data;
             }
@@ -210,7 +210,7 @@ namespace BOHO.Infrastructure.Repositories
             using (var httpClient = this._httpClientFactory.CreateClient())
             {
                 var url =
-                    $"http://{_configuration.IP}:{_configuration.Port}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/rule";
+                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/rule";
                 var response = await this.GetJson<Response<IEnumerable<Rule>>>(httpClient, url);
                 return response.Data;
             }

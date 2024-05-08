@@ -1,4 +1,5 @@
 using System;
+using BOHO.Application.ViewModel;
 using VideoOS.Platform.Client;
 
 namespace BOHO.Client
@@ -8,18 +9,15 @@ namespace BOHO.Client
     /// </summary>
     public partial class BOHOWorkSpaceViewItemWpfUserControl : ViewItemWpfUserControl
     {
-        public BOHOWorkSpaceViewItemWpfUserControl()
+        public BOHOWorkSpaceViewItemWpfUserControl(BOHOWorkspaceViewItemWpfViewModel vm)
         {
+            DataContext = vm;
             InitializeComponent();
         }
 
-        public override void Init()
-        {
-        }
+        public override void Init() { }
 
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         /// <summary>
         /// Do not show the sliding toolbar!

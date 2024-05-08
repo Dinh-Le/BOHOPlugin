@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BOHO.Core.Entities
+﻿namespace BOHO.Core.Entities
 {
     public class BoundingBoxInfo
     {

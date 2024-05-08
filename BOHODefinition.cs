@@ -130,10 +130,10 @@ namespace BOHO
 
             if (EnvironmentManager.Instance.EnvironmentType == EnvironmentType.SmartClient)
             {
-                //_workSpacePlugins.Add(new BOHOWorkSpacePlugin());
+                _workSpacePlugins.Add(new BOHOWorkSpacePlugin());
                 //_sidePanelPlugins.Add(new BOHOSidePanelPlugin());
                 _viewItemPlugins.Add(new BOHOViewItemPlugin());
-                //_viewItemPlugins.Add(new BOHOWorkSpaceViewItemPlugin());
+                _viewItemPlugins.Add(new BOHOWorkSpaceViewItemPlugin());
                 _viewItemToolbarPlugins.Add(new BOHOViewItemToolbarPlugin());
                 //_workSpaceToolbarPlugins.Add(new BOHOWorkSpaceToolbarPlugin());
                 //_settingsPanelPlugins.Add(new BOHOSettingsPanelPlugin());

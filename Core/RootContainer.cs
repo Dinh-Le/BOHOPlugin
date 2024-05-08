@@ -1,5 +1,6 @@
 ﻿using System;
 using BOHO.Application.ViewModel;
+using BOHO.Client;
 using BOHO.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,16 +19,23 @@ namespace BOHO.Core
 
             var serviceCollection = new ServiceCollection()
                 .AddSingleton<EventListener>()
-                .AddSingleton(new Entities.BOHOConfiguration
-                {
-                    IP = "192.168.100.14",
-                    Port = 5500,
-                    Username = "root",
-                    Password = "Goback@2021",
-                    MilestoneId = 6
-                })
+                .AddSingleton(
+                    new Entities.BOHOConfiguration
+                    {
+                        IP = "192.168.100.14",
+                        ApiPort = 5500,
+                        WebPort = 8081,
+                        Username = "root",
+                        Password = "Goback@2021",
+                        MilestoneId = 6
+                    }
+                )
                 .AddSingleton<Interfaces.IBOHORepository, BOHORepository>()
+                // Views
+                .AddTransient<BOHOWorkSpaceViewItemWpfUserControl>()
+                // View models
                 .AddTransient<ViewItemToolbarPluginViewModel>()
+                .AddTransient<BOHOWorkspaceViewItemWpfViewModel>()
                 .AddHttpClient();
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
@@ -37,7 +45,9 @@ namespace BOHO.Core
         {
             if (_serviceProvider == null)
             {
-                throw new InvalidOperationException("The root container has not been intialized yet");
+                throw new InvalidOperationException(
+                    "The root container has not been intialized yet"
+                );
             }
 
             return _serviceProvider.GetRequiredService<T>();
