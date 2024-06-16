@@ -156,7 +156,7 @@
     <Compile Include="Core\Entities\Rule.cs" />
     <Compile Include="Core\EventListener.cs" />
     <Compile Include="Core\Interfaces\IBOHORepository.cs" />
-    <Compile Include="Core\Entities\BOHOEventData.cs" />
+    <Compile Include="Core\Entities\BOHOEventArgs.cs" />
     <Compile Include="Core\RootContainer.cs" />
     <Compile Include="Infrastructure\Repositories\BOHORepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

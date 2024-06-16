@@ -2,8 +2,7 @@
 
 namespace BOHO.Core.Entities
 {
-
-    public class BOHOEventData
+    public class BOHOEventArgs
     {
         public int DeviceId { get; set; }
         public string DeviceName { get; set; }

@@ -41,7 +41,7 @@ namespace BOHO.Client
         private DispatcherTimer _timer;
         private List<object> _messageRegisterObjects;
         private object _setDeviceMessageObject;
-        private Core.Entities.BOHOEventData _eventMetadata;
+        private Core.Entities.BOHOEventArgs _eventMetadata;
         private bool _boundingBoxVisible = false;
         private bool _ruleVisible = false;
         private bool _ruleNameVisible = false;
@@ -180,7 +180,7 @@ namespace BOHO.Client
             });
         }
 
-        private void OnEventReceived(Core.Entities.BOHOEventData eventMetadata)
+        private void OnEventReceived(object sender, Core.Entities.BOHOEventArgs eventMetadata)
         {
             if (!this._boundingBoxVisible || this._selectedDevice?.ID != eventMetadata.DeviceId)
             {

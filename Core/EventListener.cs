@@ -22,7 +22,7 @@ namespace BOHO.Core
         private readonly IManagedMqttClient _mqttClient;
         private bool _isInitialized;
 
-        public event Action<BOHOEventData> EventReceived;
+        public event EventHandler<BOHOEventArgs> EventReceived;
 
         private class EventData
         {
@@ -82,44 +82,46 @@ namespace BOHO.Core
                 .WithClientOptions(clientOptions)
                 .Build();
             await this._mqttClient.StartAsync(options);
+
+            this._isInitialized = true;
         }
 
         private Task MqttClient_ApplicationMessageReceivedAsync(
             MqttApplicationMessageReceivedEventArgs arg
         )
         {
-            var payloadString = Encoding.UTF8.GetString(
-                arg.ApplicationMessage.PayloadSegment.ToArray()
-            );
+            var payloadString = Encoding.UTF8.GetString([.. arg.ApplicationMessage.PayloadSegment]);
 
             try
             {
                 var eventData = JsonConvert.DeserializeObject<EventData>(payloadString);
-                var bohoEventData = new BOHOEventData
-                {
-                    DeviceId = eventData.CameraId,
-                    DeviceName = eventData.CameraName,
-                    PresetId = eventData.PresetId,
-                    BoundingBoxes = eventData
-                        .Det.Select(det =>
-                        {
-                            double x = det[0] / ImageWidth;
-                            double y = det[1] / ImageHeight;
-                            var width = (det[2] - det[0]) / ImageWidth;
-                            var height = (det[3] - det[1]) / ImageHeight;
-                            var objectName = eventData.Labels[(int)det[5]];
-                            return new BoundingBoxInfo
+                BOHOEventArgs args =
+                    new()
+                    {
+                        DeviceId = eventData.CameraId,
+                        DeviceName = eventData.CameraName,
+                        PresetId = eventData.PresetId,
+                        BoundingBoxes = eventData
+                            .Det.Select(det =>
                             {
-                                X = x,
-                                Y = y,
-                                Width = width,
-                                Height = height,
-                                ObjectName = objectName
-                            };
-                        })
-                        .ToList()
-                };
-                this.EventReceived?.Invoke(bohoEventData);
+                                double x = det[0] / ImageWidth;
+                                double y = det[1] / ImageHeight;
+                                var width = (det[2] - det[0]) / ImageWidth;
+                                var height = (det[3] - det[1]) / ImageHeight;
+                                var objectName = eventData.Labels[(int)det[5]];
+                                return new BoundingBoxInfo
+                                {
+                                    X = x,
+                                    Y = y,
+                                    Width = width,
+                                    Height = height,
+                                    ObjectName = objectName
+                                };
+                            })
+                            .ToList()
+                    };
+
+                this.EventReceived?.Invoke(this, args);
             }
             catch
             {
