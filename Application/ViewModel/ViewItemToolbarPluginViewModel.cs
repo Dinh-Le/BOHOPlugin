@@ -60,9 +60,13 @@ namespace BOHO.Application.ViewModel
         public FQID ViewItemInstanceFQID { set; get; }
 
         private readonly IBOHORepository _bohoRepository;
+        private readonly IMessageService _messageService;
         private object _deviceStatusHandleId;
 
-        public ViewItemToolbarPluginViewModel(IBOHORepository bohoRepository)
+        public ViewItemToolbarPluginViewModel(
+            IBOHORepository bohoRepository,
+            IMessageService messageService
+        )
         {
             this.Nodes = new List<Core.Entities.Node>();
             this.RuleEnabled = false;
@@ -71,6 +75,7 @@ namespace BOHO.Application.ViewModel
             this.PtzEnabled = false;
             this.SelectedDevice = new Core.Entities.Device { ID = -1, Name = "Chọn camera" };
             this._bohoRepository = bohoRepository;
+            this._messageService = messageService;
         }
 
         private object OnDeviceStatusChanged(Message message, FQID sender, FQID related)
@@ -129,15 +134,20 @@ namespace BOHO.Application.ViewModel
             {
                 if (this.PtzEnabled)
                 {
-                    await this._bohoRepository.StopService(this.SelectedDevice);
+                    await this._bohoRepository.StartService(this.SelectedDevice);
                 }
                 else
                 {
-                    await this._bohoRepository.StartService(this.SelectedDevice);
+                    await this._bohoRepository.StopService(this.SelectedDevice);
                 }
             }
             catch
             {
+                string errorMessage = this.PtzEnabled
+                    ? "Start touring by BOHO failed"
+                    : "Pause touring by BOHO failed";
+                this._messageService.ShowError("Error", errorMessage);
+
                 this.PtzEnabled = !this.PtzEnabled;
             }
         }

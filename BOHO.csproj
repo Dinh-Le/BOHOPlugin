@@ -116,6 +116,7 @@
     <Compile Include="Admin\BOHOUserControl.Designer.cs">
       <DependentUpon>BOHOUserControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Application\Util\MessageService.cs" />
     <Compile Include="Application\Util\ShapeUtil.cs" />
     <Compile Include="Application\ViewModel\BOHOWorkspaceViewItemWpfViewModel.cs" />
     <Compile Include="Application\ViewModel\ViewItemToolbarPluginViewModel.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Core\EventListener.cs" />
     <Compile Include="Core\Interfaces\IBOHORepository.cs" />
     <Compile Include="Core\Entities\BOHOEventArgs.cs" />
+    <Compile Include="Core\Interfaces\IMessageService.cs" />
     <Compile Include="Core\RootContainer.cs" />
     <Compile Include="Infrastructure\Repositories\BOHORepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
