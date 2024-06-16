@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Drawing;
 using BOHO.Application.ViewModel;
@@ -12,28 +13,28 @@ namespace BOHO.Client
     {
         private Item _viewItemInstance;
         private Item _window;
-        private ViewItemToolbarPluginViewModel _vm;
+        private readonly ViewItemToolbarPluginViewModel _viewModel;
+
+        public BOHOViewItemToolbarPluginInstance(ViewItemToolbarPluginViewModel viewModel)
+        {
+            _viewModel = viewModel;
+        }
 
         public override void Init(Item viewItemInstance, Item window)
         {
             _viewItemInstance = viewItemInstance;
             _window = window;
-            _vm = RootContainer.Get<ViewItemToolbarPluginViewModel>();
         }
 
-        public override void Activate()
-        {
-        }
+        public override void Activate() { }
 
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         public override ToolbarPluginWpfUserControl GenerateWpfUserControl()
         {
             var bohoRepository = RootContainer.Get<Core.Interfaces.IBOHORepository>();
-            _vm.Nodes = bohoRepository.Nodes;
-            return new ViewItemToolbarPluginWpfUserControl(_vm)
+            _viewModel.Nodes = bohoRepository.Nodes;
+            return new ViewItemToolbarPluginWpfUserControl(_viewModel)
             {
                 WindowFQID = _window.FQID,
                 ViewItemInstanceFQID = _viewItemInstance.FQID,
@@ -43,7 +44,6 @@ namespace BOHO.Client
 
     internal class BOHOViewItemToolbarPlugin : ViewItemToolbarPlugin
     {
-    
         public override Guid Id
         {
             get { return BOHODefinition.BOHOViewItemToolbarPluginId; }
@@ -53,7 +53,7 @@ namespace BOHO.Client
         {
             get { return "BOHO"; }
         }
-       
+
         public override ToolbarPluginOverflowMode ToolbarPluginOverflowMode
         {
             get { return ToolbarPluginOverflowMode.AsNeeded; }
@@ -64,24 +64,29 @@ namespace BOHO.Client
             get { return ToolbarPluginType.UserControl; }
         }
 
-        public BOHOViewItemToolbarPlugin()
-        {
-        }
+        public BOHOViewItemToolbarPlugin() { }
 
         public override void Init()
         {
-            ViewItemToolbarPlaceDefinition.ViewItemIds = new List<Guid>() { BOHODefinition.BOHOViewItemPlugin };
-            ViewItemToolbarPlaceDefinition.WorkSpaceIds = new List<Guid>() { ClientControl.LiveBuildInWorkSpaceId, ClientControl.PlaybackBuildInWorkSpaceId };
-            ViewItemToolbarPlaceDefinition.WorkSpaceStates = new List<WorkSpaceState>() { WorkSpaceState.Normal };
+            ViewItemToolbarPlaceDefinition.ViewItemIds = new List<Guid>()
+            {
+                BOHODefinition.BOHOViewItemPlugin
+            };
+            ViewItemToolbarPlaceDefinition.WorkSpaceIds = new List<Guid>()
+            {
+                ClientControl.LiveBuildInWorkSpaceId
+            };
+            ViewItemToolbarPlaceDefinition.WorkSpaceStates = new List<WorkSpaceState>()
+            {
+                WorkSpaceState.Normal
+            };
         }
 
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         public override ViewItemToolbarPluginInstance GenerateViewItemToolbarPluginInstance()
         {
-            return new BOHOViewItemToolbarPluginInstance();
+            return RootContainer.Get<BOHOViewItemToolbarPluginInstance>();
         }
     }
 }

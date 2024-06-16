@@ -38,6 +38,7 @@ namespace BOHO.Core
                 .AddSingleton<IMessageService, MessageService>()
                 // View models
                 .AddTransient<ViewItemToolbarPluginViewModel>()
+                .AddTransient<BOHOViewItemToolbarPluginInstance>()
                 .AddTransient<BOHOWorkspaceViewItemWpfViewModel>()
                 .AddHttpClient();
 

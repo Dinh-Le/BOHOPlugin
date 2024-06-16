@@ -180,7 +180,7 @@ namespace BOHO.Infrastructure.Repositories
             {
                 var url =
                     $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/resume_device";
-                await this.GetJson<Response<bool>>(httpClient, url);
+                await this.GetJson<Response<object>>(httpClient, url);
             }
         }
 
@@ -190,7 +190,7 @@ namespace BOHO.Infrastructure.Repositories
             {
                 var url =
                     $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/pause_device";
-                await this.GetJson<Response<bool>>(httpClient, url);
+                await this.GetJson<Response<object>>(httpClient, url);
             }
         }
 
