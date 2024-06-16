@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using BOHO.Core.Entities;
 using BOHO.Core.Interfaces;
@@ -11,10 +12,8 @@ namespace BOHO.Infrastructure.Repositories
     public class BOHORepository : IBOHORepository
     {
         public List<Core.Entities.Node> Nodes { get; set; }
-
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly BOHOConfiguration _configuration;
-        private string _accessToken;
+        private readonly HttpClient httpClient;
 
         #region Models
         private class UserLoginRequest
@@ -78,158 +77,123 @@ namespace BOHO.Infrastructure.Repositories
             BOHOConfiguration configuration
         )
         {
-            this._httpClientFactory = httppClientFactory;
             this._configuration = configuration;
-            this.Nodes = new List<Core.Entities.Node>();
+
+            this.httpClient = httppClientFactory.CreateClient();
+            this.httpClient.BaseAddress = new System.Uri(
+                $"http://{_configuration.IP}:{_configuration.ApiPort}"
+            );
+
+            this.Nodes = [];
         }
 
         public async Task Synchronize()
         {
             this.Nodes.Clear();
 
-            using (var httpClient = this._httpClientFactory.CreateClient())
+            var getNodesUrl = "/api/rest/v1/node";
+            var getNodesResponse = await this.GetJson<Response<List<Node>>>(getNodesUrl);
+            var nodes = getNodesResponse.Data.Where(node => node.Type.Equals("TensorTRT")).ToList();
+
+            foreach (var node in nodes)
             {
-                var getNodesUrl =
-                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node";
-                var getNodesResponse = await this.GetJson<Response<List<Node>>>(
-                    httpClient,
-                    getNodesUrl
-                );
-                var nodes = getNodesResponse
-                    .Data.Where(node => node.Type.Equals("TensorTRT"))
-                    .ToList();
+                var deviceList = new List<Core.Entities.Device>();
+                var getDevicesUrl = $"/api/rest/v1/node/{node.Id}/device";
+                var getDevicesResponse = await this.GetJson<Response<List<Device>>>(getDevicesUrl);
 
-                foreach (var node in nodes)
+                foreach (var device in getDevicesResponse.Data)
                 {
-                    var deviceList = new List<Core.Entities.Device>();
-                    var getDevicesUrl =
-                        $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{node.Id}/device";
-                    var getDevicesResponse = await this.GetJson<Response<List<Device>>>(
-                        httpClient,
-                        getDevicesUrl
+                    var getIntegrationsUrl =
+                        $"/api/rest/v1/node/{node.Id}/device/{device.Id}/intergrate";
+                    var getIntegrationsResponse = await this.GetJson<Response<List<Integration>>>(
+                        getIntegrationsUrl
                     );
-
-                    foreach (var device in getDevicesResponse.Data)
+                    var integration = getIntegrationsResponse.Data.FirstOrDefault(x =>
+                        x.MilestoneId == this._configuration.MilestoneId
+                    );
+                    if (integration != default(Integration))
                     {
-                        var getIntegrationsUrl =
-                            $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{node.Id}/device/{device.Id}/intergrate";
-                        var getIntegrationsResponse = await this.GetJson<
-                            Response<List<Integration>>
-                        >(httpClient, getIntegrationsUrl);
-                        var integration = getIntegrationsResponse.Data.FirstOrDefault(x =>
-                            x.MilestoneId == this._configuration.MilestoneId
+                        deviceList.Add(
+                            new Core.Entities.Device
+                            {
+                                ID = device.Id,
+                                Name = device.Name,
+                                Guid = integration.Guid,
+                                NodeID = node.Id
+                            }
                         );
-                        if (integration != default(Integration))
-                        {
-                            deviceList.Add(
-                                new Core.Entities.Device
-                                {
-                                    ID = device.Id,
-                                    Name = device.Name,
-                                    Guid = integration.Guid,
-                                    NodeID = node.Id
-                                }
-                            );
-                        }
                     }
-
-                    if (!deviceList.Any())
-                    {
-                        continue;
-                    }
-
-                    this.Nodes.Add(
-                        new Core.Entities.Node
-                        {
-                            Id = node.Id,
-                            Name = node.Name,
-                            Devices = deviceList
-                        }
-                    );
                 }
+
+                if (!deviceList.Any())
+                {
+                    continue;
+                }
+
+                this.Nodes.Add(
+                    new Core.Entities.Node
+                    {
+                        Id = node.Id,
+                        Name = node.Name,
+                        Devices = deviceList
+                    }
+                );
             }
         }
 
         public async Task Login()
         {
-            using (var httpClient = this._httpClientFactory.CreateClient())
-            {
-                var payloadString = JsonConvert.SerializeObject(
-                    new UserLoginRequest
-                    {
-                        Name = _configuration.Username,
-                        Password = _configuration.Password
-                    }
-                );
-                var response = await httpClient.PostAsync(
-                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/login",
-                    new StringContent(payloadString)
-                );
-                response.EnsureSuccessStatusCode();
+            var payloadString = JsonConvert.SerializeObject(
+                new UserLoginRequest
+                {
+                    Name = _configuration.Username,
+                    Password = _configuration.Password
+                }
+            );
+            var response = await httpClient.PostAsync(
+                $"/api/rest/v1/login",
+                new StringContent(payloadString)
+            );
+            response.EnsureSuccessStatusCode();
 
-                var responseText = await response.Content.ReadAsStringAsync();
-                var loginResponse = JsonConvert.DeserializeObject<Response<string>>(responseText);
+            var responseText = await response.Content.ReadAsStringAsync();
+            var loginResponse = JsonConvert.DeserializeObject<Response<string>>(responseText);
 
-                this._accessToken = loginResponse.Data;
-            }
+            this.httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                "Bearer",
+                loginResponse.Data
+            );
         }
 
         public async Task StartService(Core.Entities.Device device)
         {
-            using (var httpClient = this._httpClientFactory.CreateClient())
-            {
-                var url =
-                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/resume_device";
-                await this.GetJson<Response<object>>(httpClient, url);
-            }
+            var url = $"/api/rest/v1/node/{device.NodeID}/device/{device.ID}/resume_device";
+            await this.GetJson<Response<object>>(url);
         }
 
         public async Task StopService(Core.Entities.Device device)
         {
-            using (var httpClient = this._httpClientFactory.CreateClient())
-            {
-                var url =
-                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/pause_device";
-                await this.GetJson<Response<object>>(httpClient, url);
-            }
+            var url = $"/api/rest/v1/node/{device.NodeID}/device/{device.ID}/pause_device";
+            await this.GetJson<Response<object>>(url);
         }
 
         public async Task<bool> GetServiceStatus(Core.Entities.Device device)
         {
-            using (var httpClient = this._httpClientFactory.CreateClient())
-            {
-                var url =
-                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/service_status";
-                var response = await this.GetJson<Response<bool>>(httpClient, url);
-                return response.Data;
-            }
+            var url = $"/api/rest/v1/node/{device.NodeID}/device/{device.ID}/service_status";
+            var response = await this.GetJson<Response<bool>>(url);
+            return response.Data;
         }
 
         public async Task<IEnumerable<Rule>> GetRules(Core.Entities.Device device)
         {
-            using (var httpClient = this._httpClientFactory.CreateClient())
-            {
-                var url =
-                    $"http://{_configuration.IP}:{_configuration.ApiPort}/api/rest/v1/node/{device.NodeID}/device/{device.ID}/rule";
-                var response = await this.GetJson<Response<IEnumerable<Rule>>>(httpClient, url);
-                return response.Data;
-            }
+            var url = $"/api/rest/v1/node/{device.NodeID}/device/{device.ID}/rule";
+            var response = await this.GetJson<Response<IEnumerable<Rule>>>(url);
+            return response.Data;
         }
 
-        public async Task<T> GetJson<T>(HttpClient httpClient, string url)
+        public async Task<T> GetJson<T>(string url)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-
-            if (!string.IsNullOrEmpty(this._accessToken))
-            {
-                request.Headers.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue(
-                        "Bearer",
-                        this._accessToken
-                    );
-            }
-
-            var response = await httpClient.SendAsync(request);
+            var response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             var responseText = await response.Content.ReadAsStringAsync();
