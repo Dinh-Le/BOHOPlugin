@@ -7,5 +7,6 @@
         public string Guid { get; set; }
         public string NodeID { get; set; }
         public bool ServiceStatus { get; set; }
+        public bool IsPTZ { get; set; }
     }
 }

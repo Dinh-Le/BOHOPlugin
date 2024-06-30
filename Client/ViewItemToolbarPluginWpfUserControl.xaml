@@ -4,28 +4,31 @@
                                     xmlns:entities="clr-namespace:BOHO.Core.Entities"
                                     xmlns:client="clr-namespace:VideoOS.Platform.Client;assembly=VideoOS.Platform"
                                     xmlns:controls="clr-namespace:VideoOS.Platform.UI.Controls;assembly=VideoOS.Platform">
+    <client:ToolbarPluginWpfUserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter"/>
+    </client:ToolbarPluginWpfUserControl.Resources>
     <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal"
                     VerticalAlignment="Center">
             <Menu Background="Transparent">
                 <controls:VideoOSContextMenuItem ItemsSource="{Binding Nodes}">
                     <controls:VideoOSContextMenuItem.Header>
-                        <controls:VideoOSTextBlockBody1 Text="{Binding SelectedDevice.Name}"
+                        <controls:VideoOSTextBlockBodySmall Text="{Binding SelectedDevice.Name}"
                                                         Width="150" />
                     </controls:VideoOSContextMenuItem.Header>
                     <controls:VideoOSContextMenuItem.Resources>
                         <HierarchicalDataTemplate DataType="{x:Type entities:Node}"
                                                   ItemsSource="{Binding Devices}">
-                            <controls:VideoOSTextBlockBody1 Text="{Binding Name}" />
+                            <controls:VideoOSTextBlockBodySmall Text="{Binding Name}" />
                         </HierarchicalDataTemplate>
                         <HierarchicalDataTemplate DataType="{x:Type entities:Device}">
-                            <controls:VideoOSTextBlockBody1 Text="{Binding Name}">
-                                <controls:VideoOSTextBlockBody1.InputBindings>
+                            <controls:VideoOSTextBlockBodySmall Text="{Binding Name}">
+                                <controls:VideoOSTextBlockBodySmall.InputBindings>
                                     <MouseBinding MouseAction="LeftClick"
                                                   Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=client:ToolbarPluginWpfUserControl}, Path=DataContext.SelectDeviceCommand}"
                                                   CommandParameter="{Binding}" />
-                                </controls:VideoOSTextBlockBody1.InputBindings>
-                            </controls:VideoOSTextBlockBody1>
+                                </controls:VideoOSTextBlockBodySmall.InputBindings>
+                            </controls:VideoOSTextBlockBodySmall>
                         </HierarchicalDataTemplate>
                     </controls:VideoOSContextMenuItem.Resources>
                 </controls:VideoOSContextMenuItem>
@@ -36,29 +39,30 @@
                     VerticalAlignment="Center">
             <controls:VideoOSCheckBoxSmall IsChecked="{Binding PtzEnabled}"
                                            Command="{Binding ChangeDeviceServiceStatusCommand}" />
-            <controls:VideoOSTextBlockBody1 Text="Bật/tắt PTZ"
+            <controls:VideoOSTextBlockBodySmall Text="Bật/tắt PTZ"
                                             Margin="10 0 0 0" />
         </StackPanel>
         <Separator />
         <StackPanel Orientation="Horizontal"
-                    VerticalAlignment="Center">
+                    VerticalAlignment="Center"
+                    Visibility="{Binding BoundingBoxCheckboxVisible, Converter={StaticResource booleanToVisibilityConverter}}">
             <controls:VideoOSCheckBoxSmall IsChecked="{Binding BoundingBoxEnabled}"
                                            Command="{Binding ChangeBoundingBoxVisibilityCommand}" />
-            <controls:VideoOSTextBlockBody1 Text="Hiện/ẩn bounding box"
+            <controls:VideoOSTextBlockBodySmall Text="Hiện/ẩn bounding box"
                                             Margin="10 0 0 0" />
         </StackPanel>
         <StackPanel Orientation="Horizontal"
                     VerticalAlignment="Center">
             <controls:VideoOSCheckBoxSmall IsChecked="{Binding RuleEnabled}"
                                            Command="{Binding ChangeRuleVisibilityCommand}" />
-            <controls:VideoOSTextBlockBody1 Text="Hiện/ẩn quy tắc"
+            <controls:VideoOSTextBlockBodySmall Text="Hiện/ẩn quy tắc"
                                             Margin="10 0 0 0" />
         </StackPanel>
         <StackPanel Orientation="Horizontal"
                     VerticalAlignment="Center">
             <controls:VideoOSCheckBoxSmall IsChecked="{Binding RuleNameEnabled}"
                                            Command="{Binding ChangeRuleNameVisibilityCommand}" />
-            <controls:VideoOSTextBlockBody1 Text="Hiện/ẩn tên quy tắc"
+            <controls:VideoOSTextBlockBodySmall Text="Hiện/ẩn tên quy tắc"
                                             Margin="10 0 0 0" />
         </StackPanel>
     </StackPanel>

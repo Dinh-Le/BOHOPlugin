@@ -21,6 +21,13 @@ namespace BOHO.Application.ViewModel
             set => SetProperty(ref boundingBoxEnabled, value);
         }
 
+        private bool _boundingBoxCheckboxVisible = false;
+        public bool BoundingBoxCheckboxVisible 
+        {
+            get => _boundingBoxCheckboxVisible;
+            set => SetProperty(ref _boundingBoxCheckboxVisible, value);
+        }
+
         private bool ruleEnabled;
         public bool RuleEnabled
         {
@@ -96,6 +103,9 @@ namespace BOHO.Application.ViewModel
             }
 
             this.SelectedDevice = device;
+
+            // Do not render the bounding box for PTZ camera
+            this.BoundingBoxCheckboxVisible = !this.SelectedDevice.IsPTZ;
 
             if (this._deviceStatusHandleId != null)
             {

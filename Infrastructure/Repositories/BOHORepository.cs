@@ -56,6 +56,18 @@ namespace BOHO.Infrastructure.Repositories
 
             [JsonProperty("name")]
             public string Name { get; set; }
+
+            [JsonProperty("camera")]
+            public Camera Camera { get; set; }
+        }
+
+        private class Camera
+        {
+            [JsonProperty("type")]
+            public string Type { get; set; }
+
+            [JsonProperty("driver")]
+            public string Driver { get; set; }
         }
 
         private class Integration
@@ -119,7 +131,8 @@ namespace BOHO.Infrastructure.Repositories
                                 ID = device.Id,
                                 Name = device.Name,
                                 Guid = integration.Guid,
-                                NodeID = node.Id
+                                NodeID = node.Id,
+                                IsPTZ = device.Camera.Type.Equals("ptz", System.StringComparison.OrdinalIgnoreCase)
                             }
                         );
                     }
