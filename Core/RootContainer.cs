@@ -25,10 +25,13 @@ namespace BOHO.Core
 
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
+                .MinimumLevel.Debug()
                 .WriteTo.File(
                     "logs/log.txt",
-                    Serilog.Events.LogEventLevel.Debug,
-                    rollingInterval: RollingInterval.Hour
+                    LogEventLevel.Debug,
+                    rollingInterval: RollingInterval.Hour,
+                    retainedFileTimeLimit: TimeSpan.FromDays(1),
+                    flushToDiskInterval: TimeSpan.FromSeconds(30)
                 )
                 .Destructure.ByTransforming<object>((value) => JsonConvert.SerializeObject(value))
                 .CreateLogger();

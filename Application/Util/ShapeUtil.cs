@@ -14,7 +14,7 @@ namespace BOHO.Application.Util
                 text,
                 System.Threading.Thread.CurrentThread.CurrentUICulture,
                 FlowDirection.LeftToRight,
-                new Typeface("Gill Sans Ultra Bold"),
+                new Typeface("Arial"),
                 14,
                 Brushes.Red,
                 pixelsPerDip
@@ -23,8 +23,8 @@ namespace BOHO.Application.Util
             return new Path
             {
                 Data = textGeometry,
-                Stroke = Brushes.Red,
-                StrokeThickness = 2
+                Stroke = Brushes.Black,
+                StrokeThickness = 1
             };
         }
 
