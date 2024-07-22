@@ -28,14 +28,14 @@ namespace BOHO.Application.Util
             };
         }
 
-        public static Shape FromRule(Rule rule)
+        public static Shape FromRule(Rule rule, double scaleX = 1, double scaleY = 1)
         {
             var fillColor = (Color)ColorConverter.ConvertFromString("#FFFF7F");
             var polygon = new Polygon() { Fill = new SolidColorBrush(fillColor) { Opacity = 0.2 } };
 
             foreach (var point in rule.Points)
             {
-                polygon.Points.Add(new Point { X = point[0], Y = point[1] });
+                polygon.Points.Add(new Point { X = point[0] * scaleX, Y = point[1] * scaleY });
             }
 
             return polygon;

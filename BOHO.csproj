@@ -158,10 +158,11 @@
     <Compile Include="Client\BOHOWorkSpaceViewItemWpfUserControl.xaml.cs">
       <DependentUpon>BOHOWorkSpaceViewItemWpfUserControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Client\SetDeviceMessage.cs" />
+    <Compile Include="Application\Models\SetDeviceEventArgs.cs" />
     <Compile Include="Client\ViewItemToolbarPluginWpfUserControl.xaml.cs">
       <DependentUpon>ViewItemToolbarPluginWpfUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\Entities\BOHOConfiguration.cs" />
     <Compile Include="Core\Entities\BoundingBoxInfo.cs" />
     <Compile Include="Core\Entities\Device.cs" />

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BOHO.Application.Models;
 using BOHO.Client;
+using BOHO.Core;
 using BOHO.Core.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -22,7 +24,7 @@ namespace BOHO.Application.ViewModel
         }
 
         private bool _boundingBoxCheckboxVisible = false;
-        public bool BoundingBoxCheckboxVisible 
+        public bool BoundingBoxCheckboxVisible
         {
             get => _boundingBoxCheckboxVisible;
             set => SetProperty(ref _boundingBoxCheckboxVisible, value);
@@ -112,6 +114,10 @@ namespace BOHO.Application.ViewModel
                 EnvironmentManager.Instance.UnRegisterReceiver(this._deviceStatusHandleId);
             }
 
+            IEnumerable<Core.Entities.Rule> rules = await this._bohoRepository.GetRules(
+                this.SelectedDevice
+            );
+
             var topic = $"/device/{device.ID}/status";
             this._deviceStatusHandleId = EnvironmentManager.Instance.RegisterReceiver(
                 OnDeviceStatusChanged,
@@ -120,21 +126,16 @@ namespace BOHO.Application.ViewModel
 
             var message = new Message("/device")
             {
-                Data = new SetDeviceMessage
+                Data = new SetDeviceEventArgs
                 {
                     Device = device,
+                    Rules = rules,
                     ViewItemInstanceFQID = ViewItemInstanceFQID,
                     WindowFQID = WindowFQID
                 }
             };
-            var handlerTasks = EnvironmentManager
-                .Instance.SendMessage(message)
-                .Where(obj => obj is Task)
-                .Select(task => (Task)task);
-            foreach (var task in handlerTasks)
-            {
-                await task;
-            }
+
+            EnvironmentManager.Instance.SendMessage(message);
         }
 
         [RelayCommand(CanExecute = nameof(CanChangeDeviceServiceStatus))]
@@ -184,7 +185,7 @@ namespace BOHO.Application.ViewModel
         }
 
         [RelayCommand(CanExecute = nameof(CanChangeRuleVisibility))]
-        private async Task ChangeRuleVisibility()
+        private void ChangeRuleVisibility()
         {
             var tasks = EnvironmentManager
                 .Instance.SendMessage(
@@ -193,11 +194,10 @@ namespace BOHO.Application.ViewModel
                         Data = this.RuleEnabled
                     }
                 )
-                .Where(task => task is Task);
-            foreach (var task in tasks)
-            {
-                await (Task)task;
-            }
+                .OfType<Task>()
+                .ToArray();
+
+            Task.WaitAll(tasks);
         }
 
         private bool CanChangeRuleVisibility()
