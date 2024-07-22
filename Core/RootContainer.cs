@@ -5,6 +5,10 @@ using BOHO.Client;
 using BOHO.Core.Interfaces;
 using BOHO.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace BOHO.Core
 {
@@ -19,7 +23,18 @@ namespace BOHO.Core
                 throw new InvalidOperationException("The root container has been intialized");
             }
 
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.File(
+                    "logs/log.txt",
+                    Serilog.Events.LogEventLevel.Debug,
+                    rollingInterval: RollingInterval.Hour
+                )
+                .Destructure.ByTransforming<object>((value) => JsonConvert.SerializeObject(value))
+                .CreateLogger();
+
             var serviceCollection = new ServiceCollection()
+                .AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true))
                 .AddSingleton<EventListener>()
                 .AddSingleton(
                     new Entities.BOHOConfiguration

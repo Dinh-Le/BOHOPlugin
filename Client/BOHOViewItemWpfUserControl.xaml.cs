@@ -11,6 +11,7 @@ using System.Windows.Threading;
 using BOHO.Application.Util;
 using BOHO.Core;
 using BOHO.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 using VideoOS.Platform;
 using VideoOS.Platform.Client;
 using VideoOS.Platform.Messaging;
@@ -34,6 +35,7 @@ namespace BOHO.Client
     {
         #region Component private class variables
         private BOHOViewItemManager _viewItemManager;
+        private readonly ILogger<BOHOViewItemWpfUserControl> _logger;
         private Core.EventListener _eventListener;
         private Guid? _boundingBoxShapesOverlayGuid;
         private Guid? _ruleShapesOverlayGuid;
@@ -55,6 +57,7 @@ namespace BOHO.Client
         public BOHOViewItemWpfUserControl(BOHOViewItemManager viewItemManager)
         {
             _viewItemManager = viewItemManager;
+            _logger = RootContainer.Get<ILogger<BOHOViewItemWpfUserControl>>();
 
             InitializeComponent();
 
@@ -188,6 +191,7 @@ namespace BOHO.Client
             }
 
             this._eventMetadata = eventMetadata;
+            this._logger.LogInformation("Received an event: {@Event}", this._eventMetadata);
             this.RenderBoundingBox();
         }
 
@@ -362,6 +366,9 @@ namespace BOHO.Client
                     FollowDigitalZoom = true,
                     ZOrder = 1
                 };
+
+                this._logger.LogDebug("Draw bounding boxes");
+
                 this._boundingBoxShapesOverlayGuid = this._imageViewer.ShapesOverlayAdd(
                     shapes,
                     parameters
@@ -434,6 +441,7 @@ namespace BOHO.Client
                             return shapes;
                         })
                         .ToList();
+
                     this._ruleShapesOverlayGuid = this._imageViewer.ShapesOverlayAdd(
                         shapes,
                         new ShapesOverlayRenderParameters { FollowDigitalZoom = true, ZOrder = 1 }
