@@ -46,6 +46,9 @@ namespace BOHO.Core
 
             [JsonProperty("preset_id")]
             public int PresetId { get; set; }
+
+            [JsonProperty("event_time")]
+            public DateTime EventTime { get; set; }
         }
 
         public EventListener()
@@ -118,7 +121,10 @@ namespace BOHO.Core
                                     ObjectName = objectName
                                 };
                             })
-                            .ToList()
+                            .ToList(),
+                        EventTime
+                         = eventData.EventTime,
+                        ReceivedEventTime = DateTime.Now,
                     };
 
                 this.EventReceived?.Invoke(this, args);

@@ -110,7 +110,7 @@ namespace BOHO.Background
                         device.ServiceStatus = status;
 
                         var messageId = $"/device/{device.ID}/status";
-                        EnvironmentManager.Instance.SendMessage(
+                        EnvironmentManager.Instance?.SendMessage(
                             new VideoOS.Platform.Messaging.Message(messageId) { Data = status }
                         );
                     }

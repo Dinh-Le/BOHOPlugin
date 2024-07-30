@@ -77,6 +77,11 @@ namespace BOHO.Client
             return new BOHOPropertiesWpfUserControl(this);
         }
 
+        internal void SaveAllProperties()
+        {
+            SaveProperties();
+        }
+
         #endregion
 
         public List<Item> ConfigItems

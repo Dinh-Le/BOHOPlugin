@@ -10,20 +10,6 @@
                                        MouseDown="ViewItemWpfUserControl_MouseDown"
                                        MouseDoubleClick="ViewItemWpfUserControl_MouseDoubleClick">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="18" />
-            <RowDefinition Height="18" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="17" />
-                <ColumnDefinition Width="83" />
-            </Grid.ColumnDefinitions>
-        </Grid>
-        <platformclient:ImageViewerWpfControl Grid.Row="2"
-                                              x:Name="_imageViewer"
-                                              MinHeight="100" />
+        <platformclient:ImageViewerWpfControl x:Name="_imageViewer" />
     </Grid>
 </platformclient:ViewItemWpfUserControl>

@@ -45,6 +45,7 @@ namespace BOHO.Client
         private object _setDeviceMessageObject;
         private Core.Entities.BOHOEventArgs _eventMetadata;
 
+
         private bool _boundingBoxVisible;
         private bool BoundingBoxVisible
         {
@@ -53,6 +54,7 @@ namespace BOHO.Client
             {
                 this._boundingBoxVisible = value;
                 this._viewItemManager.SetProperty("bounding_box_visible", value.ToString());
+                this._viewItemManager.SaveAllProperties();
             }
         }
 
@@ -64,6 +66,7 @@ namespace BOHO.Client
             {
                 this._ruleVisible = value;
                 this._viewItemManager.SetProperty("rule_visible", value.ToString());
+                this._viewItemManager.SaveAllProperties();
             }
         }
 
@@ -71,7 +74,12 @@ namespace BOHO.Client
         private bool RuleNameVisible
         {
             get => this._ruleNameVisible;
-            set => this._viewItemManager.SetProperty("rule_name_visible", value.ToString());
+            set
+            {
+                this._ruleNameVisible = value;
+                this._viewItemManager.SetProperty("rule_name_visible", value.ToString());
+                this._viewItemManager.SaveAllProperties();
+            }
         }
 
         private Core.Entities.Device _selectedDevice;
@@ -85,6 +93,7 @@ namespace BOHO.Client
                     "selected_device",
                     JsonConvert.SerializeObject(value)
                 );
+                this._viewItemManager.SaveAllProperties();
             }
         }
 
@@ -96,6 +105,7 @@ namespace BOHO.Client
             {
                 this._rules = value;
                 this._viewItemManager.SetProperty("rules", JsonConvert.SerializeObject(value));
+                this._viewItemManager.SaveAllProperties();
             }
         }
 
@@ -138,10 +148,10 @@ namespace BOHO.Client
                 this._selectedCamera = Configuration.Instance.GetItem(new FQID(fqdiString));
             }
             this._rules = JsonConvert.DeserializeObject<IEnumerable<Core.Entities.Rule>>(
-                this._viewItemManager.GetProperty("rules")
+                this._viewItemManager.GetProperty("rules") ?? ""
             );
             this._selectedDevice = JsonConvert.DeserializeObject<Core.Entities.Device>(
-                this._viewItemManager.GetProperty("selected_device")
+                this._viewItemManager.GetProperty("selected_device") ?? ""
             );
             this._ruleNameVisible =
                 bool.TryParse(
@@ -318,7 +328,7 @@ namespace BOHO.Client
         {
             List<Item> mipViewItems = WindowInformation.ViewAndLayoutItem.GetChildren();
             Item viewItemInstance = mipViewItems[int.Parse(_viewItemManager.FQID.ObjectIdString)];
-
+            
             var data = message.Data as SetDeviceEventArgs;
 
             if (
@@ -364,107 +374,114 @@ namespace BOHO.Client
         }
 
         private void RenderBoundingBox()
-        {
-            if (this._boundingBoxShapesOverlayGuid != null)
+        {            
+            this.Dispatcher.Invoke(() =>
             {
-                this._imageViewer.ShapesOverlayRemove((Guid)this._boundingBoxShapesOverlayGuid);
-            }
-
-            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-            var shapes = this
-                ._eventMetadata.BoundingBoxes.SelectMany(box =>
+                if (this._boundingBoxShapesOverlayGuid != null)
                 {
-                    var x = box.X * this._imageViewer.ActualWidth;
-                    var y = box.Y * this._imageViewer.ActualHeight;
-                    var width = box.Width * this._imageViewer.ActualWidth;
-                    var height = box.Height * this._imageViewer.ActualHeight;
-                    var boundingBoxPath = new Path
+                    this._imageViewer.ShapesOverlayRemove((Guid)this._boundingBoxShapesOverlayGuid);
+                }
+
+                var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+
+                var shapes = this
+                    ._eventMetadata.BoundingBoxes.SelectMany(box =>
                     {
-                        Data = new RectangleGeometry(
-                            new Rect
-                            {
-                                X = x,
-                                Y = y,
-                                Width = width,
-                                Height = height
-                            }
-                        ),
-                        Stroke = Brushes.Red,
-                        StrokeThickness = 2
-                    };
-                    var textPath = ShapeUtil.FromText(
-                        box.ObjectName,
-                        new Point(x, y - 14),
-                        pixelsPerDip
-                    );
-                    return new List<Shape> { boundingBoxPath, textPath };
-                })
-                .ToList();
-            if (!shapes.Any())
-            {
-                return;
-            }
+                        var x = box.X * this._imageViewer.ActualWidth;
+                        var y = box.Y * this._imageViewer.ActualHeight;
+                        var width = box.Width * this._imageViewer.ActualWidth;
+                        var height = box.Height * this._imageViewer.ActualHeight;
+                        var boundingBoxPath = new Path
+                        {
+                            Data = new RectangleGeometry(
+                                new Rect
+                                {
+                                    X = x,
+                                    Y = y,
+                                    Width = Math.Max(0, width),
+                                    Height = Math.Max(0, height)
+                                }
+                            ),
+                            Stroke = Brushes.Red,
+                            StrokeThickness = 2
+                        };
+                        var textPath = ShapeUtil.FromText(
+                            $"{box.ObjectName}--{_eventMetadata.EventTime:mm:ss}--{_eventMetadata.ReceivedEventTime:mm:ss}--{DateTime.Now:mm:ss}",
+                            new Point(x, y - 14),
+                            pixelsPerDip
+                        );
+                        return new List<Shape> { boundingBoxPath, textPath };
+                    })
+                    .ToList();
+                if (!shapes.Any())
+                {
+                    return;
+                }
 
-            this._logger.LogDebug("Draw bounding boxes");
-            var parameters = new ShapesOverlayRenderParameters
-            {
-                FollowDigitalZoom = true,
-                ZOrder = 1
-            };
-            this._boundingBoxShapesOverlayGuid = this._imageViewer.ShapesOverlayAdd(
-                shapes,
-                parameters
-            );
+                this._logger.LogDebug("Draw bounding boxes");
+                var parameters = new ShapesOverlayRenderParameters
+                {
+                    FollowDigitalZoom = true,
+                    ZOrder = 1
+                };
+                this._boundingBoxShapesOverlayGuid = this._imageViewer.ShapesOverlayAdd(
+                    shapes,
+                    parameters
+                );
+            });                       
 
-            this._timer.Stop();
-            this._timer.Start();
+            //this._timer.Stop();
+            //this._timer.Start();
         }
 
         private void RenderRules()
         {
-            if (this._ruleShapesOverlayGuid is not null)
-            {
-                this._imageViewer.ShapesOverlayRemove((Guid)this._ruleShapesOverlayGuid);
-                this._ruleShapesOverlayGuid = null;
-            }
+            this.Dispatcher.Invoke(() => {
+                if (this._ruleShapesOverlayGuid is not null)
+                {
+                    this._imageViewer.ShapesOverlayRemove((Guid)this._ruleShapesOverlayGuid);
+                    this._ruleShapesOverlayGuid = null;
+                }
 
-            if (this.RuleVisible)
-            {
-                var shapes = this
-                    .Rules.SelectMany(rule =>
-                    {
-                        double scaleX = this._imageViewer.ActualWidth / Constants.AI_IMAGE_WIDTH;
-                        double scaleY = this._imageViewer.ActualHeight / Constants.AI_IMAGE_HEIGHT;
-
-                        var shapes = new List<Shape>();
-
-                        var ruleShape = ShapeUtil.FromRule(rule, scaleX, scaleY);
-                        shapes.Add(ruleShape);
-
-                        if (this.RuleNameVisible)
+                if (this.RuleVisible)
+                {
+                    var shapes = this
+                        .Rules.SelectMany(rule =>
                         {
-                            var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-                            var ruleNameShape = ShapeUtil.FromText(
-                                rule.Name,
-                                new Point
-                                {
-                                    X = rule.Points[0][0] * scaleX,
-                                    Y = rule.Points[0][1] * scaleY
-                                },
-                                pixelsPerDip
-                            );
-                            shapes.Add(ruleNameShape);
-                        }
+                            double scaleX = this._imageViewer.ActualWidth / Constants.AI_IMAGE_WIDTH;
+                            double scaleY = this._imageViewer.ActualHeight / Constants.AI_IMAGE_HEIGHT;
 
-                        return shapes;
-                    })
-                    .ToList();
+                            var shapes = new List<Shape>();
 
-                this._ruleShapesOverlayGuid = this._imageViewer.ShapesOverlayAdd(
-                    shapes,
-                    new ShapesOverlayRenderParameters { FollowDigitalZoom = true, ZOrder = 2 }
-                );
-            }
+                            var ruleShape = ShapeUtil.FromRule(rule, scaleX, scaleY);
+                            shapes.Add(ruleShape);
+
+                            if (this.RuleNameVisible)
+                            {
+                                var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+                                var ruleNameShape = ShapeUtil.FromText(
+                                    rule.Name,
+                                    new Point
+                                    {
+                                        X = rule.Points[0][0] * scaleX,
+                                        Y = rule.Points[0][1] * scaleY
+                                    },
+                                    pixelsPerDip
+                                );
+                                shapes.Add(ruleNameShape);
+                            }
+
+                            return shapes;
+                        })
+                        .ToList();
+
+                    this._ruleShapesOverlayGuid = this._imageViewer.ShapesOverlayAdd(
+                        shapes,
+                        new ShapesOverlayRenderParameters { FollowDigitalZoom = true, ZOrder = 2 }
+                    );
+                }
+            });
+            
         }
 
         private void Update()
@@ -499,15 +516,17 @@ namespace BOHO.Client
                 this._imageViewer.CameraFQID = this.SelectedCamera.FQID;
                 this._imageViewer.EnableVisibleLiveIndicator = true;
                 this._imageViewer.EnableVisibleHeader = true;
-                this._imageViewer.MaintainImageAspectRatio = true;
+                this._imageViewer.MaintainImageAspectRatio = false;
                 this._imageViewer.EnableMouseControlledPtz = true;
                 this._imageViewer.EnableDigitalZoom = true;
                 this._imageViewer.Initialize();
                 this._imageViewer.Connect();
-            }
+            }                      
 
             this.RenderRules();
         }
+
+  
 
         #endregion
 

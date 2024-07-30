@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using VideoOS.Platform;
 using VideoOS.Platform.Client;
 
@@ -76,12 +74,12 @@ namespace BOHO.Client
         {
             get
             {
-                return new List<SidePanelPlaceDefinition>() {
-                    new SidePanelPlaceDefinition() {
-                        WorkSpaceId = VideoOS.Platform.ClientControl.LiveBuildInWorkSpaceId,
-                        WorkSpaceStates = new List<WorkSpaceState>() { VideoOS.Platform.WorkSpaceState.Normal }
+                return [
+                    new() {
+                        WorkSpaceId = ClientControl.LiveBuildInWorkSpaceId,
+                        WorkSpaceStates = [WorkSpaceState.Normal]
                     }
-                };
+                ];
             }
         }
 
