@@ -7,7 +7,6 @@ using BOHO.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
 
 namespace BOHO.Core
@@ -42,7 +41,7 @@ namespace BOHO.Core
                 .AddSingleton(
                     new Entities.BOHOConfiguration
                     {
-                        IP = "192.168.100.14",
+                        IP = "127.0.0.1",
                         ApiPort = 5500,
                         WebPort = 8081,
                         Username = "root",
@@ -50,13 +49,12 @@ namespace BOHO.Core
                         MilestoneId = 6
                     }
                 )
-                .AddSingleton<Interfaces.IBOHORepository, BOHORepository>()
+                .AddSingleton<IBOHORepository, BOHORepository>()
                 // Views
                 .AddTransient<BOHOWorkSpaceViewItemWpfUserControl>()
                 .AddSingleton<IMessageService, MessageService>()
                 // View models
                 .AddTransient<ViewItemToolbarPluginViewModel>()
-                .AddTransient<BOHOViewItemToolbarPluginInstance>()
                 .AddTransient<BOHOWorkspaceViewItemWpfViewModel>()
                 .AddHttpClient();
 

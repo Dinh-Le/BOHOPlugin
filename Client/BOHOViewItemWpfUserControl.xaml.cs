@@ -45,7 +45,6 @@ namespace BOHO.Client
         private object _setDeviceMessageObject;
         private Core.Entities.BOHOEventArgs _eventMetadata;
 
-
         private bool _boundingBoxVisible;
         private bool BoundingBoxVisible
         {
@@ -89,10 +88,7 @@ namespace BOHO.Client
             set
             {
                 this._selectedDevice = value;
-                this._viewItemManager.SetProperty(
-                    "selected_device",
-                    JsonConvert.SerializeObject(value)
-                );
+                this._viewItemManager.SetProperty("selected_device", value.SerializeToJson());
                 this._viewItemManager.SaveAllProperties();
             }
         }
@@ -104,7 +100,7 @@ namespace BOHO.Client
             set
             {
                 this._rules = value;
-                this._viewItemManager.SetProperty("rules", JsonConvert.SerializeObject(value));
+                this._viewItemManager.SetProperty("rules", value.SerializeToJson());
                 this._viewItemManager.SaveAllProperties();
             }
         }
@@ -174,7 +170,7 @@ namespace BOHO.Client
             );
 
             this._eventListener.EventReceived += OnEventReceived;
-            this._timer.Tick += OnEventTimeout;
+
             this._setDeviceMessageObject = EnvironmentManager.Instance.RegisterReceiver(
                 OnDeviceChanged,
                 new MessageIdFilter("/device")
@@ -189,7 +185,6 @@ namespace BOHO.Client
                 ViewItemManagerPropertyChangedEvent
             );
             this._eventListener.EventReceived -= OnEventReceived;
-            this._timer.Tick -= OnEventTimeout;
 
             EnvironmentManager.Instance.UnRegisterReceiver(this._setDeviceMessageObject);
             this._messageRegisterObjects.ForEach(obj =>
@@ -328,7 +323,7 @@ namespace BOHO.Client
         {
             List<Item> mipViewItems = WindowInformation.ViewAndLayoutItem.GetChildren();
             Item viewItemInstance = mipViewItems[int.Parse(_viewItemManager.FQID.ObjectIdString)];
-            
+
             var data = message.Data as SetDeviceEventArgs;
 
             if (
@@ -374,7 +369,7 @@ namespace BOHO.Client
         }
 
         private void RenderBoundingBox()
-        {            
+        {
             this.Dispatcher.Invoke(() =>
             {
                 if (this._boundingBoxShapesOverlayGuid != null)
@@ -428,7 +423,7 @@ namespace BOHO.Client
                     shapes,
                     parameters
                 );
-            });                       
+            });
 
             //this._timer.Stop();
             //this._timer.Start();
@@ -436,7 +431,8 @@ namespace BOHO.Client
 
         private void RenderRules()
         {
-            this.Dispatcher.Invoke(() => {
+            this.Dispatcher.Invoke(() =>
+            {
                 if (this._ruleShapesOverlayGuid is not null)
                 {
                     this._imageViewer.ShapesOverlayRemove((Guid)this._ruleShapesOverlayGuid);
@@ -448,8 +444,10 @@ namespace BOHO.Client
                     var shapes = this
                         .Rules.SelectMany(rule =>
                         {
-                            double scaleX = this._imageViewer.ActualWidth / Constants.AI_IMAGE_WIDTH;
-                            double scaleY = this._imageViewer.ActualHeight / Constants.AI_IMAGE_HEIGHT;
+                            double scaleX =
+                                this._imageViewer.ActualWidth / Constants.AI_IMAGE_WIDTH;
+                            double scaleY =
+                                this._imageViewer.ActualHeight / Constants.AI_IMAGE_HEIGHT;
 
                             var shapes = new List<Shape>();
 
@@ -481,7 +479,6 @@ namespace BOHO.Client
                     );
                 }
             });
-            
         }
 
         private void Update()
@@ -521,12 +518,10 @@ namespace BOHO.Client
                 this._imageViewer.EnableDigitalZoom = true;
                 this._imageViewer.Initialize();
                 this._imageViewer.Connect();
-            }                      
+            }
 
             this.RenderRules();
         }
-
-  
 
         #endregion
 

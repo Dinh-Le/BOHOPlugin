@@ -1,5 +1,4 @@
 ﻿using BOHO.Application.ViewModel;
-using VideoOS.Platform;
 
 namespace BOHO.Client
 {
@@ -9,18 +8,6 @@ namespace BOHO.Client
     public partial class ViewItemToolbarPluginWpfUserControl
         : VideoOS.Platform.Client.ToolbarPluginWpfUserControl
     {
-        public FQID WindowFQID
-        {
-            get => ((ViewItemToolbarPluginViewModel)DataContext).WindowFQID;
-            set => ((ViewItemToolbarPluginViewModel)DataContext).WindowFQID = value;
-        }
-
-        public FQID ViewItemInstanceFQID
-        {
-            get => ((ViewItemToolbarPluginViewModel)DataContext).ViewItemInstanceFQID;
-            set => ((ViewItemToolbarPluginViewModel)DataContext).ViewItemInstanceFQID = value;
-        }
-
         public ViewItemToolbarPluginWpfUserControl(ViewItemToolbarPluginViewModel vm)
         {
             DataContext = vm;

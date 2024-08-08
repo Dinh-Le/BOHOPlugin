@@ -4,23 +4,23 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BOHO.Application.Models;
-using BOHO.Client;
-using BOHO.Core;
+using BOHO.Application.Util;
 using BOHO.Core.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VideoOS.Platform;
+using VideoOS.Platform.Client.Export;
 using VideoOS.Platform.Messaging;
 
 namespace BOHO.Application.ViewModel
 {
     public partial class ViewItemToolbarPluginViewModel : ObservableObject, IDisposable
     {
-        private bool boundingBoxEnabled;
+        private bool _boundingBoxEnabled;
         public bool BoundingBoxEnabled
         {
-            get => boundingBoxEnabled;
-            set => SetProperty(ref boundingBoxEnabled, value);
+            get => _boundingBoxEnabled;
+            set => SetProperty(ref _boundingBoxEnabled, value);
         }
 
         private bool _boundingBoxCheckboxVisible = false;
@@ -30,43 +30,43 @@ namespace BOHO.Application.ViewModel
             set => SetProperty(ref _boundingBoxCheckboxVisible, value);
         }
 
-        private bool ruleEnabled;
+        private bool _ruleEnabled;
         public bool RuleEnabled
         {
-            get => ruleEnabled;
-            set => SetProperty(ref ruleEnabled, value);
+            get => _ruleEnabled;
+            set => SetProperty(ref _ruleEnabled, value);
         }
 
-        private bool ruleNameEnabled;
+        private bool _ruleNameEnabled;
         public bool RuleNameEnabled
         {
-            get => ruleNameEnabled;
-            set => SetProperty(ref ruleNameEnabled, value);
+            get => _ruleNameEnabled;
+            set => SetProperty(ref _ruleNameEnabled, value);
         }
 
-        private Core.Entities.Device selectedDevice;
+        private Core.Entities.Device _selectedDevice = new() { ID = -1, Name = "Chọn camera" };
         public Core.Entities.Device SelectedDevice
         {
-            get => selectedDevice;
-            set => SetProperty(ref selectedDevice, value);
+            get => _selectedDevice;
+            set => SetProperty(ref _selectedDevice, value);
         }
 
-        private List<Core.Entities.Node> nodes;
+        private List<Core.Entities.Node> _nodes;
         public List<Core.Entities.Node> Nodes
         {
-            get => nodes;
-            set => SetProperty(ref nodes, value);
+            get => _nodes;
+            set => SetProperty(ref _nodes, value);
         }
 
-        private bool ptzEnabled;
+        private bool _ptzEnabled;
         public bool PtzEnabled
         {
-            get => ptzEnabled;
-            set => SetProperty(ref ptzEnabled, value);
+            get => _ptzEnabled;
+            set => SetProperty(ref _ptzEnabled, value);
         }
 
-        public FQID WindowFQID { set; get; }
-        public FQID ViewItemInstanceFQID { set; get; }
+        public FQID WindowFQID { get; set; }
+        public FQID ViewItemInstanceFQID { get; set; }
 
         private readonly IBOHORepository _bohoRepository;
         private readonly IMessageService _messageService;
@@ -77,14 +77,26 @@ namespace BOHO.Application.ViewModel
             IMessageService messageService
         )
         {
-            this.Nodes = new List<Core.Entities.Node>();
-            this.RuleEnabled = false;
-            this.BoundingBoxEnabled = false;
-            this.RuleNameEnabled = false;
-            this.PtzEnabled = false;
-            this.SelectedDevice = new Core.Entities.Device { ID = -1, Name = "Chọn camera" };
             this._bohoRepository = bohoRepository;
             this._messageService = messageService;
+        }
+
+        public void Init(Dictionary<string, string> properties)
+        {
+            properties.TryGetValue("rule_visible", out string str);
+            this.RuleEnabled = str.ToBool();
+
+            properties.TryGetValue("rule_name_visible", out str);
+            this.RuleNameEnabled = str.ToBool();
+
+            properties.TryGetValue("bounding_box_visible", out str);
+            this.BoundingBoxEnabled = str.ToBool();
+
+            properties.TryGetValue("selected_device", out str);
+            this.SelectedDevice =
+                str.Deserialize<Core.Entities.Device>() ?? new() { ID = -1, Name = "Chọn camera" };
+
+            this.Nodes = this._bohoRepository.Nodes;
         }
 
         private object OnDeviceStatusChanged(Message message, FQID sender, FQID related)
@@ -93,7 +105,7 @@ namespace BOHO.Application.ViewModel
             return null;
         }
 
-        [RelayCommand()]
+        [RelayCommand]
         private async Task SelectDevice(
             Core.Entities.Device device,
             CancellationToken cancellationToken
