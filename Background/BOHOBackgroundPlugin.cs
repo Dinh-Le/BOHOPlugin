@@ -90,7 +90,7 @@ namespace BOHO.Background
         private async Task RunAsync(CancellationToken cancellationToken)
         {
             var eventListener = Core.RootContainer.Get<Core.EventListener>();
-            await eventListener.Initialize();
+            await eventListener.InitializeAsync();
 
             var bohoRepo = RootContainer.Get<IBOHORepository>();
 

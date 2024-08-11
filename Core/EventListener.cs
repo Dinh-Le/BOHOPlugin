@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BOHO.Core.Entities;
@@ -9,16 +8,24 @@ using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Packets;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BOHO.Core
 {
-    public class EventListener : IDisposable
+    public interface IEventListener
     {
-        private const string MqttTopic = "milestone-communicate";
-        private const string MqttHost = "192.168.100.14";
-        private const int MqttPort = 1883;
-        private const double ImageWidth = 1920;
-        private const double ImageHeight = 1080;
+        public event EventHandler<BOHOEventArgs> EventReceived;
+        public Task InitializeAsync();
+    }
+
+    public class EventListener : IEventListener, IDisposable
+    {
+        private readonly string _mqttTopic;
+        private readonly string _mqttHost;
+        private readonly int _mqttPort;
+        private readonly double _imageWidth;
+        private readonly double _imageHeight;
+
         private readonly IManagedMqttClient _mqttClient;
         private bool _isInitialized;
 
@@ -51,8 +58,14 @@ namespace BOHO.Core
             public DateTime EventTime { get; set; }
         }
 
-        public EventListener()
+        public EventListener(BOHOConfiguration configuration)
         {
+            this._mqttTopic = configuration.MqttTopic;
+            this._mqttHost = configuration.MqttHost;
+            this._mqttPort = configuration.MqttPort;
+            this._imageWidth = configuration.AnalyticImageWidth;
+            this._imageHeight = configuration.AnalyticImageHeight;
+
             this._mqttClient = new MqttFactory().CreateManagedMqttClient();
             this._mqttClient.ApplicationMessageReceivedAsync +=
                 MqttClient_ApplicationMessageReceivedAsync;
@@ -65,20 +78,20 @@ namespace BOHO.Core
             this._mqttClient.Dispose();
         }
 
-        public async Task Initialize()
+        public async Task InitializeAsync()
         {
             if (this._isInitialized)
             {
                 throw new InvalidOperationException("The connection has been initialized");
             }
 
-            var topicFilter = new MqttTopicFilterBuilder().WithTopic(MqttTopic).Build();
+            var topicFilter = new MqttTopicFilterBuilder().WithTopic(_mqttTopic).Build();
             await this._mqttClient.SubscribeAsync(new List<MqttTopicFilter> { topicFilter });
 
             // Setup and start a managed MQTT client.
             var clientOptions = new MqttClientOptionsBuilder()
                 .WithClientId("MilestonePluginClient-" + Guid.NewGuid().ToString())
-                .WithTcpServer(MqttHost, MqttPort)
+                .WithTcpServer(_mqttHost, _mqttPort)
                 .Build();
             var options = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
@@ -97,35 +110,68 @@ namespace BOHO.Core
 
             try
             {
-                var eventData = JsonConvert.DeserializeObject<EventData>(payloadString);
+                JObject jsonData = JObject.Parse(payloadString);
                 BOHOEventArgs args =
                     new()
                     {
-                        DeviceId = eventData.CameraId,
-                        DeviceName = eventData.CameraName,
-                        PresetId = eventData.PresetId,
-                        BoundingBoxes = eventData
-                            .Det.Select(det =>
+                        DeviceId = jsonData["camera_id"].ToObject<int>(),
+                        DeviceName = jsonData["camera_name"].ToString(),
+                        PresetId = jsonData["preset_id"].ToObject<int>(),
+                        BoundingBoxes =
+                        [
+                            new BoundingBoxInfo
                             {
-                                double x = det[0] / ImageWidth;
-                                double y = det[1] / ImageHeight;
-                                var width = (det[2] - det[0]) / ImageWidth;
-                                var height = (det[3] - det[1]) / ImageHeight;
-                                var objectName = eventData.Labels[(int)det[5]];
-                                return new BoundingBoxInfo
-                                {
-                                    X = x,
-                                    Y = y,
-                                    Width = width,
-                                    Height = height,
-                                    ObjectName = objectName
-                                };
-                            })
-                            .ToList(),
-                        EventTime
-                         = eventData.EventTime,
+                                X =
+                                    jsonData["bounding_box"]["topleftx"].ToObject<int>()
+                                    / this._imageWidth,
+                                Y =
+                                    jsonData["bounding_box"]["toplefty"].ToObject<int>()
+                                    / this._imageHeight,
+                                Width =
+                                    (
+                                        jsonData["bounding_box"]["bottomrightx"].ToObject<int>()
+                                        - jsonData["bounding_box"]["topleftx"].ToObject<int>()
+                                    ) / this._imageWidth,
+                                Height =
+                                    (
+                                        jsonData["bounding_box"]["bottomrighty"].ToObject<int>()
+                                        - jsonData["bounding_box"]["toplefty"].ToObject<int>()
+                                    ) / this._imageHeight,
+                                ObjectName = jsonData["object_type"].ToString()
+                            }
+                        ],
+                        EventTime = jsonData["event_time"].ToObject<DateTime>(),
                         ReceivedEventTime = DateTime.Now,
                     };
+
+                //var eventData = JsonConvert.DeserializeObject<EventData>(payloadString);
+                //BOHOEventArgs args =
+                //    new()
+                //    {
+                //        DeviceId = eventData.CameraId,
+                //        DeviceName = eventData.CameraName,
+                //        PresetId = eventData.PresetId,
+                //        BoundingBoxes = eventData
+                //            .Det.Select(det =>
+                //            {
+                //                double x = det[0] / _imageWidth;
+                //                double y = det[1] / _imageHeight;
+                //                var width = (det[2] - det[0]) / _imageWidth;
+                //                var height = (det[3] - det[1]) / _imageHeight;
+                //                var objectName = eventData.Labels[(int)det[5]];
+                //                return new BoundingBoxInfo
+                //                {
+                //                    X = x,
+                //                    Y = y,
+                //                    Width = width,
+                //                    Height = height,
+                //                    ObjectName = objectName
+                //                };
+                //            })
+                //            .ToList(),
+                //        EventTime = eventData.EventTime,
+                //        ReceivedEventTime = DateTime.Now,
+                //    };
 
                 this.EventReceived?.Invoke(this, args);
             }

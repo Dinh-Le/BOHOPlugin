@@ -37,16 +37,21 @@ namespace BOHO.Core
 
             var serviceCollection = new ServiceCollection()
                 .AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true))
-                .AddSingleton<EventListener>()
+                .AddSingleton<IEventListener, EventListener>()
                 .AddSingleton(
                     new Entities.BOHOConfiguration
                     {
-                        IP = "127.0.0.1",
+                        IP = "192.168.100.14",
                         ApiPort = 5500,
                         WebPort = 8081,
                         Username = "root",
                         Password = "Goback@2021",
-                        MilestoneId = 6
+                        MilestoneId = 6,
+                        MqttTopic = "/test/milestone",
+                        MqttHost = "127.0.0.1",
+                        MqttPort = 1883,
+                        AnalyticImageWidth = 1920,
+                        AnalyticImageHeight = 1080
                     }
                 )
                 .AddSingleton<IBOHORepository, BOHORepository>()

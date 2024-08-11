@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Xml;
+using BOHO.Core;
+using BOHO.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 using VideoOS.Platform;
 using VideoOS.Platform.Client;
 
@@ -18,28 +20,31 @@ namespace BOHO.Client
         private string _someName;
         private List<Item> _configItems;
 
-        public BOHOViewItemManager() : base("BOHOViewItemManager")
-        {
-        }
+        public BOHOViewItemManager()
+            : base("BOHOViewItemManager") { }
 
-        #region Methods overridden 
+        #region Methods overridden
         /// <summary>
-        /// The properties for this ViewItem is now loaded into the base class and can be accessed via 
+        /// The properties for this ViewItem is now loaded into the base class and can be accessed via
         /// GetProperty(key) and SetProperty(key,value) methods
         /// </summary>
         public override void PropertiesLoaded()
         {
             String someid = GetProperty("SelectedGUID");
-            _configItems = Configuration.Instance.GetItemConfigurations(BOHODefinition.BOHOPluginId, null, BOHODefinition.BOHOKind);
+            _configItems = Configuration.Instance.GetItemConfigurations(
+                BOHODefinition.BOHOPluginId,
+                null,
+                BOHODefinition.BOHOKind
+            );
             if (someid != null && _configItems != null)
             {
-                SomeId = new Guid(someid);  // Set as last selected
+                SomeId = new Guid(someid); // Set as last selected
             }
         }
 
         ///// <summary>
         ///// Generate the UserControl containing the actual ViewItem Content.
-        ///// 
+        /////
         ///// For new plugins it is recommended to use GenerateViewItemWpfUserControl() instead. Only implement this one if support for Smart Clients older than 2017 R3 is needed.
         ///// </summary>
         ///// <returns></returns>
@@ -54,12 +59,18 @@ namespace BOHO.Client
         /// <returns></returns>
         public override ViewItemWpfUserControl GenerateViewItemWpfUserControl()
         {
-            return new BOHOViewItemWpfUserControl(this);
+            ILogger<BOHOViewItemWpfUserControl> logger = RootContainer.Get<
+                ILogger<BOHOViewItemWpfUserControl>
+            >();
+            IMessageService messageService = RootContainer.Get<IMessageService>();
+            EventListener eventListener = RootContainer.Get<EventListener>();
+
+            return new BOHOViewItemWpfUserControl(logger, messageService, eventListener, this);
         }
 
         ///// <summary>
         ///// Generate the UserControl containing the property configuration.
-        ///// 
+        /////
         ///// For new plugins it is recommended to use GeneratePropertiesWpfUserControl() instead. Only implement this one if support for Smart Clients older than 2017 R3 is needed.
         ///// </summary>
         ///// <returns></returns>

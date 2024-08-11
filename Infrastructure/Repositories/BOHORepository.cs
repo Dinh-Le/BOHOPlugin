@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -124,14 +123,14 @@ namespace BOHO.Infrastructure.Repositories
                     var integration = getIntegrationsResponse.Data.FirstOrDefault(x =>
                         x.MilestoneId == this._configuration.MilestoneId
                     );
-                    if (integration == default(Integration))
+                    if (integration == default)
                     {
                         deviceList.Add(
                             new Core.Entities.Device
                             {
                                 ID = device.Id,
                                 Name = device.Name,
-                                Guid = integration?.Guid ?? Guid.NewGuid().ToString(),
+                                Guid = "c167198b-b157-45a8-a83a-a37a70ad18f0",
                                 NodeID = node.Id,
                                 IsPTZ = device.Camera.Type.Equals(
                                     "ptz",
