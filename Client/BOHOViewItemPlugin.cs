@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
-using VideoOS.Platform;
+using BOHO.Core;
 using VideoOS.Platform.Client;
-using VideoOS.Platform.Messaging;
 
 namespace BOHO.Client
 {
@@ -59,7 +57,7 @@ namespace BOHO.Client
         /// <returns></returns>
         public override ViewItemManager GenerateViewItemManager()
         {
-            return new BOHOViewItemManager();
+            return RootContainer.Get<BOHOViewItemManager>();
         }
     }
 }

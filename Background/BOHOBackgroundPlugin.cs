@@ -25,10 +25,12 @@ namespace BOHO.Background
     /// This plugin could be listening to the Message with MessageId == Server.ConfigurationChangedIndication to when when to reload its configuration.
     /// This event is send by the environment within 60 second after the administrator has changed the configuration.
     /// </summary>
-    public class BOHOBackgroundPlugin : BackgroundPlugin
+    public class BOHOBackgroundPlugin(IBOHORepository bohoRepo, IEventListener eventListener)
+        : BackgroundPlugin
     {
-        private Task _task;
-        private CancellationTokenSource _cancellationTokenSource;
+        private readonly IBOHORepository _bohoRepo = bohoRepo;
+        private readonly IEventListener _eventListener = eventListener;
+        private readonly CancellationTokenSource _stoppingTokenSource = new();
 
         /// <summary>
         /// Gets the unique id identifying this plugin component
@@ -51,19 +53,10 @@ namespace BOHO.Background
         /// </summary>
         public override void Init()
         {
-            this._cancellationTokenSource = new CancellationTokenSource();
-            this._task = new Task(
-                async () =>
-                {
-                    try
-                    {
-                        await RunAsync(_cancellationTokenSource.Token);
-                    }
-                    catch (TaskCanceledException) { }
-                },
-                _cancellationTokenSource.Token
+            Task.Run(
+                () => ExecuteAsync(_stoppingTokenSource.Token),
+                this._stoppingTokenSource.Token
             );
-            this._task.Start();
         }
 
         /// <summary>
@@ -73,7 +66,7 @@ namespace BOHO.Background
         /// </summary>
         public override void Close()
         {
-            this._cancellationTokenSource.Cancel();
+            this._stoppingTokenSource.Cancel();
         }
 
         /// <summary>
@@ -87,26 +80,23 @@ namespace BOHO.Background
         /// <summary>
         /// the thread doing the work
         /// </summary>
-        private async Task RunAsync(CancellationToken cancellationToken)
+        private async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            var eventListener = Core.RootContainer.Get<Core.EventListener>();
-            await eventListener.InitializeAsync();
+            await this._eventListener.InitializeAsync();
 
-            var bohoRepo = RootContainer.Get<IBOHORepository>();
+            await this._bohoRepo.Login();
 
-            await bohoRepo.Login();
-
-            await bohoRepo.Synchronize();
+            await this._bohoRepo.Synchronize();
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                var devices = bohoRepo.Nodes.SelectMany(node => node.Devices).ToList();
+                var devices = this._bohoRepo.Nodes.SelectMany(node => node.Devices).ToList();
 
                 foreach (var device in devices)
                 {
                     try
                     {
-                        var status = await bohoRepo.GetServiceStatus(device);
+                        var status = await this._bohoRepo.GetServiceStatus(device);
                         device.ServiceStatus = status;
 
                         var messageId = $"/device/{device.ID}/status";

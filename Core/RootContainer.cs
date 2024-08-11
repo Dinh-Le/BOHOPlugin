@@ -1,6 +1,7 @@
 ﻿using System;
 using BOHO.Application.Util;
 using BOHO.Application.ViewModel;
+using BOHO.Background;
 using BOHO.Client;
 using BOHO.Core.Interfaces;
 using BOHO.Infrastructure.Repositories;
@@ -56,6 +57,8 @@ namespace BOHO.Core
                 )
                 .AddSingleton<IBOHORepository, BOHORepository>()
                 // Views
+                .AddTransient<BOHOViewItemManager>()
+                .AddTransient<BOHOBackgroundPlugin>()
                 .AddTransient<BOHOWorkSpaceViewItemWpfUserControl>()
                 .AddSingleton<IMessageService, MessageService>()
                 // View models

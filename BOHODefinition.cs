@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using BOHO.Admin;
 using BOHO.Background;
 using BOHO.Client;
+using BOHO.Core;
 using VideoOS.Platform;
 using VideoOS.Platform.Admin;
 using VideoOS.Platform.Background;
@@ -109,6 +110,8 @@ namespace BOHO
         /// </summary>
         public override void Init()
         {
+            RootContainer.Initialize();
+
             // Populate all relevant lists with your plugins etc.
             _itemNodes.Add(
                 new ItemNode(
@@ -137,15 +140,13 @@ namespace BOHO
                 //_settingsPanelPlugins.Add(new BOHOSettingsPanelPlugin());
             }
 
-            if (EnvironmentManager.Instance.EnvironmentType == EnvironmentType.Administration)
-            {
-                _tabPlugins.Add(new BOHOTabPlugin());
-                _toolsOptionsDialogPlugins.Add(new BOHOToolsOptionDialogPlugin());
-            }
+            //if (EnvironmentManager.Instance.EnvironmentType == EnvironmentType.Administration)
+            //{
+            //    _tabPlugins.Add(new BOHOTabPlugin());
+            //    _toolsOptionsDialogPlugins.Add(new BOHOToolsOptionDialogPlugin());
+            //}
 
-            _backgroundPlugins.Add(new BOHOBackgroundPlugin());
-
-            Core.RootContainer.Initialize();
+            _backgroundPlugins.Add(RootContainer.Get<BOHOBackgroundPlugin>());
         }
 
         /// <summary>
