@@ -37,7 +37,7 @@ namespace BOHO.Client
         private readonly BOHOViewItemManager _viewItemManager;
         private readonly ILogger<BOHOViewItemWpfUserControl> _logger;
         private readonly IMessageService _messageService;
-        private readonly EventListener _eventListener;
+        private readonly IEventListener _eventListener;
 
         private static class ShapesOverlayKey
         {
@@ -135,7 +135,7 @@ namespace BOHO.Client
         public BOHOViewItemWpfUserControl(
             ILogger<BOHOViewItemWpfUserControl> logger,
             IMessageService messageService,
-            EventListener eventListener,
+            IEventListener eventListener,
             BOHOViewItemManager viewItemManager
         )
         {

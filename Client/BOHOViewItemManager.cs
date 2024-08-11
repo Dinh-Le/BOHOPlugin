@@ -63,7 +63,7 @@ namespace BOHO.Client
                 ILogger<BOHOViewItemWpfUserControl>
             >();
             IMessageService messageService = RootContainer.Get<IMessageService>();
-            EventListener eventListener = RootContainer.Get<EventListener>();
+            IEventListener eventListener = RootContainer.Get<IEventListener>();
 
             return new BOHOViewItemWpfUserControl(logger, messageService, eventListener, this);
         }
