@@ -281,7 +281,7 @@ namespace BOHO.Client
 
         private void OnEventReceived(object sender, BOHOEventArgs args)
         {
-            if (this.SelectedDevice?.ID == args.DeviceId)
+            if (this.SelectedDevice?.ID == args.DeviceId && BoundingBoxVisible)
             {
                 Dispatcher.Invoke(() => DrawBoundingBoxes(args.BoundingBoxes));
             }

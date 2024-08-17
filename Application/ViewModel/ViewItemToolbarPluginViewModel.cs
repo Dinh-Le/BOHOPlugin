@@ -23,11 +23,9 @@ namespace BOHO.Application.ViewModel
             set => SetProperty(ref _boundingBoxEnabled, value);
         }
 
-        private bool _boundingBoxCheckboxVisible = false;
         public bool BoundingBoxCheckboxVisible
         {
-            get => _boundingBoxCheckboxVisible;
-            set => SetProperty(ref _boundingBoxCheckboxVisible, value);
+            get => !SelectedDevice.IsPTZ;
         }
 
         private bool _ruleEnabled;
@@ -44,7 +42,7 @@ namespace BOHO.Application.ViewModel
             set => SetProperty(ref _ruleNameEnabled, value);
         }
 
-        private Core.Entities.Device _selectedDevice = new() { ID = -1, Name = "Chọn camera" };
+        private Core.Entities.Device _selectedDevice = new() { ID = -1, Name = "Chọn camera", IsPTZ = false };
         public Core.Entities.Device SelectedDevice
         {
             get => _selectedDevice;
@@ -83,16 +81,16 @@ namespace BOHO.Application.ViewModel
 
         public void Init(Dictionary<string, string> properties)
         {
-            properties.TryGetValue("rule_visible", out string str);
+            properties.TryGetValue("RuleVisible", out string str);
             this.RuleEnabled = str.ToBool();
 
-            properties.TryGetValue("rule_name_visible", out str);
+            properties.TryGetValue("RuleNameVisible", out str);
             this.RuleNameEnabled = str.ToBool();
 
-            properties.TryGetValue("bounding_box_visible", out str);
+            properties.TryGetValue("BoundingBoxVisible", out str);
             this.BoundingBoxEnabled = str.ToBool();
 
-            properties.TryGetValue("selected_device", out str);
+            properties.TryGetValue("SelectedDevice", out str);
             this.SelectedDevice =
                 str.Deserialize<Core.Entities.Device>() ?? new() { ID = -1, Name = "Chọn camera" };
 
@@ -117,9 +115,6 @@ namespace BOHO.Application.ViewModel
             }
 
             this.SelectedDevice = device;
-
-            // Do not render the bounding box for PTZ camera
-            this.BoundingBoxCheckboxVisible = !this.SelectedDevice.IsPTZ;
 
             if (this._deviceStatusHandleId != null)
             {

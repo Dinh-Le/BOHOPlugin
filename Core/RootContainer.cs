@@ -61,6 +61,8 @@ namespace BOHO.Core
                 .AddTransient<BOHOBackgroundPlugin>()
                 .AddTransient<BOHOWorkSpaceViewItemWpfUserControl>()
                 .AddSingleton<IMessageService, MessageService>()
+                .AddTransient<BOHOViewItemToolbarPluginInstance>()
+                .AddTransient<ViewItemToolbarPluginWpfUserControl>()
                 // View models
                 .AddTransient<ViewItemToolbarPluginViewModel>()
                 .AddTransient<BOHOWorkspaceViewItemWpfViewModel>()

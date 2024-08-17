@@ -7,29 +7,20 @@ using VideoOS.Platform.Client.Export;
 
 namespace BOHO.Client
 {
-    internal class BOHOViewItemToolbarPluginInstance : ViewItemToolbarPluginInstance
+    internal class BOHOViewItemToolbarPluginInstance(ViewItemToolbarPluginViewModel viewModel) : ViewItemToolbarPluginInstance
     {
-        private Item _viewItemInstance;
-        private Item _window;
+        private readonly ViewItemToolbarPluginViewModel _viewModel = viewModel;
 
         public override void Init(Item viewItemInstance, Item window)
         {
-            this._viewItemInstance = viewItemInstance;
-            this._window = window;
+            _viewModel.ViewItemInstanceFQID = viewItemInstance.FQID;
+            _viewModel.WindowFQID = window.FQID;
+
+            _viewModel.Init(viewItemInstance.GetViewItemProperties());
         }
 
         public override ToolbarPluginWpfUserControl GenerateWpfUserControl()
-        {
-            ViewItemToolbarPluginViewModel viewModel =
-                RootContainer.Get<ViewItemToolbarPluginViewModel>();
-
-            viewModel.ViewItemInstanceFQID = this._viewItemInstance.FQID;
-            viewModel.WindowFQID = this._window.FQID;
-
-            viewModel.Init(this._viewItemInstance.GetViewItemProperties());
-
-            return new ViewItemToolbarPluginWpfUserControl(viewModel);
-        }
+            => new ViewItemToolbarPluginWpfUserControl(_viewModel);
 
         public override void Close() { }
     }
@@ -55,8 +46,6 @@ namespace BOHO.Client
         public override void Close() { }
 
         public override ViewItemToolbarPluginInstance GenerateViewItemToolbarPluginInstance()
-        {
-            return new BOHOViewItemToolbarPluginInstance();
-        }
+            => RootContainer.Get<BOHOViewItemToolbarPluginInstance>();
     }
 }
