@@ -158,7 +158,8 @@ namespace BOHO.Client
                 _selectedCamera = Configuration.Instance.GetItem(new FQID(fqdiString));
             }
 
-            _rules = _viewItemManager.GetProperty(nameof(Rules)).Deserialize<IEnumerable<Rule>>();
+            _rules =
+                _viewItemManager.GetProperty(nameof(Rules)).Deserialize<IEnumerable<Rule>>() ?? [];
             _selectedDevice = _viewItemManager
                 .GetProperty(nameof(SelectedDevice))
                 .Deserialize<Device>();
@@ -280,12 +281,10 @@ namespace BOHO.Client
 
         private void OnEventReceived(object sender, BOHOEventArgs args)
         {
-            //if (this.SelectedDevice?.ID != eventMetadata.DeviceId)
-            //{
-            //    return;
-            //}
-
-            Dispatcher.Invoke(() => DrawBoundingBoxes(args.BoundingBoxes));
+            if (this.SelectedDevice?.ID == args.DeviceId)
+            {
+                Dispatcher.Invoke(() => DrawBoundingBoxes(args.BoundingBoxes));
+            }
         }
 
         private object OnBoundingBoxVisibilityChanged(Message message, FQID sender, FQID related)
