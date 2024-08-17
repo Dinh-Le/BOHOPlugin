@@ -59,33 +59,33 @@ public class EventListener : IEventListener, IDisposable
 
     public EventListener(BOHOConfiguration configuration)
     {
-        this._mqttTopic = configuration.MqttTopic;
-        this._mqttHost = configuration.MqttHost;
-        this._mqttPort = configuration.MqttPort;
-        this._imageWidth = configuration.AnalyticImageWidth;
-        this._imageHeight = configuration.AnalyticImageHeight;
+        _mqttTopic = configuration.MqttTopic;
+        _mqttHost = configuration.MqttHost;
+        _mqttPort = configuration.MqttPort;
+        _imageWidth = configuration.AnalyticImageWidth;
+        _imageHeight = configuration.AnalyticImageHeight;
 
-        this._mqttClient = new MqttFactory().CreateManagedMqttClient();
-        this._mqttClient.ApplicationMessageReceivedAsync +=
+        _mqttClient = new MqttFactory().CreateManagedMqttClient();
+        _mqttClient.ApplicationMessageReceivedAsync +=
             MqttClient_ApplicationMessageReceivedAsync;
     }
 
     public void Dispose()
     {
-        this._mqttClient.ApplicationMessageReceivedAsync -=
+        _mqttClient.ApplicationMessageReceivedAsync -=
             MqttClient_ApplicationMessageReceivedAsync;
-        this._mqttClient.Dispose();
+        _mqttClient.Dispose();
     }
 
     public async Task InitializeAsync()
     {
-        if (this._isInitialized)
+        if (_isInitialized)
         {
             throw new InvalidOperationException("The connection has been initialized");
         }
 
-        var topicFilter = new MqttTopicFilterBuilder().WithTopic(_mqttTopic).Build();
-        await this._mqttClient.SubscribeAsync([topicFilter]);
+        var topicFilter = new MqttTopicFilterBuilder().WithTopic(_mqttTopic).WithTopic("/test/milestone").Build();
+        await _mqttClient.SubscribeAsync([topicFilter]);
 
         // Setup and start a managed MQTT client.
         var clientOptions = new MqttClientOptionsBuilder()
@@ -96,9 +96,9 @@ public class EventListener : IEventListener, IDisposable
             .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
             .WithClientOptions(clientOptions)
             .Build();
-        await this._mqttClient.StartAsync(options);
+        await _mqttClient.StartAsync(options);
 
-        this._isInitialized = true;
+        _isInitialized = true;
     }
 
     private Task MqttClient_ApplicationMessageReceivedAsync(
@@ -123,20 +123,20 @@ public class EventListener : IEventListener, IDisposable
                                 TrackingNumber = jsonData["tracking_number"].ToObject<int>(),
                                 X =
                                     jsonData["bounding_box"]["topleftx"].ToObject<int>()
-                                    / this._imageWidth,
+                                    / _imageWidth,
                                 Y =
                                     jsonData["bounding_box"]["toplefty"].ToObject<int>()
-                                    / this._imageHeight,
+                                    / _imageHeight,
                                 Width =
                                     (
                                         jsonData["bounding_box"]["bottomrightx"].ToObject<int>()
                                         - jsonData["bounding_box"]["topleftx"].ToObject<int>()
-                                    ) / this._imageWidth,
+                                    ) / _imageWidth,
                                 Height =
                                     (
                                         jsonData["bounding_box"]["bottomrighty"].ToObject<int>()
                                         - jsonData["bounding_box"]["toplefty"].ToObject<int>()
-                                    ) / this._imageHeight,
+                                    ) / _imageHeight,
                                 ObjectName = jsonData["object_type"].ToString(),
                                 Timestamp = jsonData["event_time"].ToObject<DateTime>()
                             }
@@ -153,7 +153,7 @@ public class EventListener : IEventListener, IDisposable
                             })
                 };
 
-            this.EventReceived?.Invoke(this, args);
+            EventReceived?.Invoke(this, args);
         }
         catch
         {
