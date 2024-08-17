@@ -123,14 +123,14 @@ namespace BOHO.Infrastructure.Repositories
                     var integration = getIntegrationsResponse.Data.FirstOrDefault(x =>
                         x.MilestoneId == this._configuration.MilestoneId
                     );
-                    if (integration == default)
+                    if (integration != default)
                     {
                         deviceList.Add(
                             new Core.Entities.Device
                             {
                                 ID = device.Id,
                                 Name = device.Name,
-                                Guid = "c167198b-b157-45a8-a83a-a37a70ad18f0",
+                                Guid = integration.Guid,
                                 NodeID = node.Id,
                                 IsPTZ = device.Camera.Type.Equals(
                                     "ptz",
@@ -139,11 +139,6 @@ namespace BOHO.Infrastructure.Repositories
                             }
                         );
                     }
-                }
-
-                if (!deviceList.Any())
-                {
-                    continue;
                 }
 
                 this.Nodes.Add(
