@@ -113,7 +113,7 @@ public class EventListener : IEventListener, IDisposable
             BOHOEventArgs args =
                 new()
                 {
-                    DeviceId = jsonData["camera_id"].ToObject<int>(),
+                    DeviceId = jsonData.ContainsKey("bounding_box") ? 84 : jsonData["camera_id"].ToObject<int>(),
                     DeviceName = jsonData["camera_name"].ToString(),
                     BoundingBoxes = jsonData.ContainsKey("bounding_box")
                         ?

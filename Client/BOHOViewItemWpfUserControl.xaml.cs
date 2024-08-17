@@ -41,7 +41,7 @@ namespace BOHO.Client
             public DateTimeOffset Timestamp { get; set; } = timestamp;
         }
 
-        private static readonly TimeSpan _boundingBoxTimeout = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan _boundingBoxTimeout = TimeSpan.FromSeconds(1);
         private static readonly ShapesOverlayRenderParameters _boundingBoxOverlayRenderParams =
             new() { FollowDigitalZoom = true, ZOrder = 1 };
         private static readonly ShapesOverlayRenderParameters _ruleOverlayRenderParams =
@@ -267,7 +267,7 @@ namespace BOHO.Client
         {
             List<Guid> outDatedOverlayIds = _boundingBoxOverlays
                 .Values.Where(overlay =>
-                    overlay.Timestamp.Subtract(DateTimeOffset.Now) > _timer.Interval
+                    DateTimeOffset.Now.Subtract(overlay.Timestamp) > _timer.Interval
                 )
                 .Select(overlay => overlay.Id)
                 .ToList();
