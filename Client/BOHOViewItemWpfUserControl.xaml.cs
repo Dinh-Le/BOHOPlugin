@@ -41,12 +41,18 @@ namespace BOHO.Client
             public DateTimeOffset Timestamp { get; set; } = timestamp;
         }
 
+        private static readonly TimeSpan _boundingBoxTimeout = TimeSpan.FromSeconds(2);
+        private static readonly ShapesOverlayRenderParameters _boundingBoxOverlayRenderParams =
+            new() { FollowDigitalZoom = true, ZOrder = 1 };
+        private static readonly ShapesOverlayRenderParameters _ruleOverlayRenderParams =
+            new() { FollowDigitalZoom = true, ZOrder = 2 };
+
         private readonly BOHOViewItemManager _viewItemManager;
         private readonly ILogger<BOHOViewItemWpfUserControl> _logger;
         private readonly IMessageService _messageService;
         private readonly IEventListener _eventListener;
 
-        private readonly DispatcherTimer _timer;
+        private readonly DispatcherTimer _timer = new() { Interval = _boundingBoxTimeout };
         private Guid _ruleOverlayId = Guid.Empty;
         private Dictionary<int, BoundingBoxOverlay> _boundingBoxOverlays = [];
         private readonly List<object> _messageRegisterObjects = [];
@@ -260,7 +266,7 @@ namespace BOHO.Client
         {
             List<Guid> outDatedOverlayIds = _boundingBoxOverlays
                 .Values.Where(overlay =>
-                    overlay.Timestamp.Subtract(DateTimeOffset.Now) > TimeSpan.FromSeconds(2)
+                    overlay.Timestamp.Subtract(DateTimeOffset.Now) > _timer.Interval
                 )
                 .Select(overlay => overlay.Id)
                 .ToList();
@@ -430,7 +436,7 @@ namespace BOHO.Client
 
                 Guid overlayId = _imageViewer.ShapesOverlayAdd(
                     BoundingBoxToShapes(box).ToList(),
-                    new ShapesOverlayRenderParameters { FollowDigitalZoom = true, ZOrder = 1 }
+                    _boundingBoxOverlayRenderParams
                 );
                 _boundingBoxOverlays[box.TrackingNumber] = new BoundingBoxOverlay(
                     box.TrackingNumber,
@@ -483,7 +489,7 @@ namespace BOHO.Client
 
             _ruleOverlayId = _imageViewer.ShapesOverlayAdd(
                 Rules.SelectMany(ConvertRuleToShapes).ToList(),
-                new ShapesOverlayRenderParameters { FollowDigitalZoom = true, ZOrder = 2 }
+                _ruleOverlayRenderParams
             );
         }
 
