@@ -166,7 +166,6 @@
     </Compile>
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\Entities\BOHOConfiguration.cs" />
-    <Compile Include="Core\Entities\BoundingBoxInfo.cs" />
     <Compile Include="Core\Entities\Device.cs" />
     <Compile Include="Core\Entities\Node.cs" />
     <Compile Include="Core\Entities\Rule.cs" />

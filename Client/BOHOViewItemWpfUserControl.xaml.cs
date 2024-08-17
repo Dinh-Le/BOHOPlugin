@@ -34,69 +34,69 @@ namespace BOHO.Client
     public partial class BOHOViewItemWpfUserControl : ViewItemWpfUserControl
     {
         #region Component private class variables
+        private class BoundingBoxOverlay(int trackingNumber, Guid id, DateTimeOffset timestamp)
+        {
+            public Guid Id { get; private set; } = id;
+            public int TrackingNumber { get; private set; } = trackingNumber;
+            public DateTimeOffset Timestamp { get; set; } = timestamp;
+        }
+
         private readonly BOHOViewItemManager _viewItemManager;
         private readonly ILogger<BOHOViewItemWpfUserControl> _logger;
         private readonly IMessageService _messageService;
         private readonly IEventListener _eventListener;
 
-        private static class ShapesOverlayKey
-        {
-            public const string BoundingBox = "BoundingBox";
-            public const string Rule = "Rule";
-        }
-
-        private readonly Dictionary<string, Guid> _shapesOverlayIds = [];
-
-        private List<object> _messageRegisterObjects;
+        private readonly DispatcherTimer _timer;
+        private Guid _ruleOverlayId = Guid.Empty;
+        private Dictionary<int, BoundingBoxOverlay> _boundingBoxOverlays = [];
+        private readonly List<object> _messageRegisterObjects = [];
         private object _setDeviceMessageObject;
-
-        private BOHOEventArgs _eventMetadata;
 
         private bool _boundingBoxVisible;
         private bool BoundingBoxVisible
         {
-            get => this._boundingBoxVisible;
+            get => _boundingBoxVisible;
             set
             {
-                this._boundingBoxVisible = value;
-                this._viewItemManager.SetProperty(nameof(BoundingBoxVisible), value.ToString());
-                this._viewItemManager.SaveAllProperties();
+                _boundingBoxVisible = value;
+                _viewItemManager.SetProperty(nameof(BoundingBoxVisible), value.ToString());
+                _viewItemManager.SaveAllProperties();
             }
         }
 
         private bool _ruleVisible;
         private bool RuleVisible
         {
-            get => this._ruleVisible;
+            get => _ruleVisible;
             set
             {
-                this._ruleVisible = value;
-                this._viewItemManager.SetProperty(nameof(RuleVisible), value.ToString());
-                this._viewItemManager.SaveAllProperties();
+                _ruleVisible = value;
+                _viewItemManager.SetProperty(nameof(RuleVisible), value.ToString());
+                _viewItemManager.SaveAllProperties();
             }
         }
 
         private bool _ruleNameVisible;
         private bool RuleNameVisible
         {
-            get => this._ruleNameVisible;
+            get => _ruleNameVisible;
             set
             {
-                this._ruleNameVisible = value;
-                this._viewItemManager.SetProperty(nameof(RuleNameVisible), value.ToString());
-                this._viewItemManager.SaveAllProperties();
+                _ruleNameVisible = value;
+                _viewItemManager.SetProperty(nameof(RuleNameVisible), value.ToString());
+                _viewItemManager.SaveAllProperties();
             }
         }
 
         private Device _selectedDevice;
         private Device SelectedDevice
         {
-            get => this._selectedDevice;
+            get => _selectedDevice;
             set
             {
-                this._selectedDevice = value;
-                this._viewItemManager.SetProperty(nameof(SelectedDevice), value.SerializeToJson());
-                this._viewItemManager.SaveAllProperties();
+                _selectedDevice = value;
+                _viewItemManager.SetProperty(nameof(SelectedDevice), value.SerializeToJson());
+                _viewItemManager.SaveAllProperties();
             }
         }
 
@@ -106,9 +106,9 @@ namespace BOHO.Client
             get => _rules;
             set
             {
-                this._rules = value;
-                this._viewItemManager.SetProperty(nameof(Rules), value.SerializeToJson());
-                this._viewItemManager.SaveAllProperties();
+                _rules = value;
+                _viewItemManager.SetProperty(nameof(Rules), value.SerializeToJson());
+                _viewItemManager.SaveAllProperties();
             }
         }
 
@@ -118,8 +118,8 @@ namespace BOHO.Client
             get => _selectedCamera;
             set
             {
-                this._selectedCamera = value;
-                this._viewItemManager.SetProperty(
+                _selectedCamera = value;
+                _viewItemManager.SetProperty(
                     ClientControl.EmbeddedCameraFQIDProperty,
                     value.FQID.ToXmlNode().OuterXml
                 );
@@ -139,55 +139,49 @@ namespace BOHO.Client
             BOHOViewItemManager viewItemManager
         )
         {
-            this._logger = logger;
-            this._messageService = messageService;
-            this._eventListener = eventListener;
-            this._viewItemManager = viewItemManager;
+            _logger = logger;
+            _messageService = messageService;
+            _eventListener = eventListener;
+            _viewItemManager = viewItemManager;
 
             if (
                 _viewItemManager.GetProperty(ClientControl.EmbeddedCameraFQIDProperty) is
                 { } fqdiString
             )
             {
-                this._selectedCamera = Configuration.Instance.GetItem(new FQID(fqdiString));
+                _selectedCamera = Configuration.Instance.GetItem(new FQID(fqdiString));
             }
 
-            this._rules = this
-                ._viewItemManager.GetProperty(nameof(Rules))
-                .Deserialize<IEnumerable<Rule>>();
-            this._selectedDevice = this
-                ._viewItemManager.GetProperty(nameof(SelectedDevice))
+            _rules = _viewItemManager.GetProperty(nameof(Rules)).Deserialize<IEnumerable<Rule>>();
+            _selectedDevice = _viewItemManager
+                .GetProperty(nameof(SelectedDevice))
                 .Deserialize<Device>();
-            this._ruleNameVisible = this
-                ._viewItemManager.GetProperty(nameof(RuleNameVisible))
-                .ToBool();
-            this._ruleVisible = this._viewItemManager.GetProperty(nameof(RuleVisible)).ToBool();
-            this._boundingBoxVisible = this
-                ._viewItemManager.GetProperty(nameof(BoundingBoxVisible))
-                .ToBool();
+            _ruleNameVisible = _viewItemManager.GetProperty(nameof(RuleNameVisible)).ToBool();
+            _ruleVisible = _viewItemManager.GetProperty(nameof(RuleVisible)).ToBool();
+            _boundingBoxVisible = _viewItemManager.GetProperty(nameof(BoundingBoxVisible)).ToBool();
 
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         private void SetUpApplicationEventListeners()
         {
-            this._eventListener.EventReceived += OnEventReceived;
-
-            this._setDeviceMessageObject = EnvironmentManager.Instance.RegisterReceiver(
+            _eventListener.EventReceived += OnEventReceived;
+            _setDeviceMessageObject = EnvironmentManager.Instance.RegisterReceiver(
                 OnDeviceChanged,
                 new MessageIdFilter("/device")
             );
+            _timer.Tick += OnTick;
+            _timer.Start();
         }
 
         private void RemoveApplicationEventListeners()
         {
-            this._eventListener.EventReceived -= OnEventReceived;
-
-            EnvironmentManager.Instance.UnRegisterReceiver(this._setDeviceMessageObject);
-
-            this._messageRegisterObjects.ForEach(obj =>
-                EnvironmentManager.Instance.UnRegisterReceiver(obj)
-            );
+            _eventListener.EventReceived -= OnEventReceived;
+            _messageRegisterObjects
+                .Append(_setDeviceMessageObject)
+                .ToList()
+                .ForEach(EnvironmentManager.Instance.UnRegisterReceiver);
+            _timer.Tick -= OnTick;
         }
 
         /// <summary>
@@ -195,8 +189,8 @@ namespace BOHO.Client
         /// </summary>
         public override void Init()
         {
-            this.SetUpApplicationEventListeners();
-            this.Update();
+            SetUpApplicationEventListeners();
+            Update();
         }
 
         /// <summary>
@@ -206,7 +200,7 @@ namespace BOHO.Client
         /// </summary>
         public override void Close()
         {
-            this.RemoveApplicationEventListeners();
+            RemoveApplicationEventListeners();
         }
 
         #endregion
@@ -262,6 +256,22 @@ namespace BOHO.Client
             }
         }
 
+        private void OnTick(object sender, EventArgs e)
+        {
+            List<Guid> outDatedOverlayIds = _boundingBoxOverlays
+                .Values.Where(overlay =>
+                    overlay.Timestamp.Subtract(DateTimeOffset.Now) > TimeSpan.FromSeconds(2)
+                )
+                .Select(overlay => overlay.Id)
+                .ToList();
+
+            _boundingBoxOverlays = _boundingBoxOverlays
+                .Values.Where(overlay => !outDatedOverlayIds.Contains(overlay.Id))
+                .ToDictionary(overlay => overlay.TrackingNumber, overlay => overlay);
+
+            Dispatcher.Invoke(() => outDatedOverlayIds.ForEach(_imageViewer.ShapesOverlayRemove));
+        }
+
         private void OnEventReceived(object sender, BOHOEventArgs args)
         {
             //if (this.SelectedDevice?.ID != eventMetadata.DeviceId)
@@ -269,30 +279,49 @@ namespace BOHO.Client
             //    return;
             //}
 
-            this._eventMetadata = args;
-            this.DrawBoundingBoxes();
+            Dispatcher.Invoke(() => DrawBoundingBoxes(args.BoundingBoxes));
         }
 
         private object OnBoundingBoxVisibilityChanged(Message message, FQID sender, FQID related)
         {
-            this.BoundingBoxVisible = (bool)message.Data;
-            this.DrawBoundingBoxes();
+            BoundingBoxVisible = (bool)message.Data;
+
+            if (!BoundingBoxVisible)
+            {
+                Dispatcher.Invoke(RemoveBoundingBoxes);
+            }
 
             return null;
         }
 
         private object OnRuleVisibilityChanged(Message message, FQID sender, FQID related)
         {
-            this.RuleVisible = (bool)message.Data;
-            this.DrawRules();
+            RuleVisible = (bool)message.Data;
+
+            if (RuleVisible)
+            {
+                Dispatcher.Invoke(ShowRules);
+            }
+            else
+            {
+                Dispatcher.Invoke(HideRules);
+            }
 
             return null;
         }
 
         private object OnRuleNameVisibilityChanged(Message message, FQID sender, FQID related)
         {
-            this.RuleNameVisible = (bool)message.Data;
-            this.DrawRules();
+            RuleNameVisible = (bool)message.Data;
+
+            if (RuleVisible)
+            {
+                Dispatcher.Invoke(ShowRules);
+            }
+            else
+            {
+                Dispatcher.Invoke(HideRules);
+            }
 
             return null;
         }
@@ -326,7 +355,7 @@ namespace BOHO.Client
             {
                 Dispatcher.Invoke(() =>
                 {
-                    this._messageService.ShowError(
+                    _messageService.ShowError(
                         "Lỗi",
                         $"Không tìm thấy camera với GUID {data.Device.Guid}"
                     );
@@ -335,134 +364,135 @@ namespace BOHO.Client
                 return null;
             }
 
-            this.SelectedCamera = camera;
-            this.SelectedDevice = data.Device;
-            this.Rules = data.Rules;
-            this.Update();
+            SelectedCamera = camera;
+            SelectedDevice = data.Device;
+            Rules = data.Rules;
+            Update();
 
             return null;
         }
 
-        private void DrawBoundingBoxes()
+        private void RemoveBoundingBoxes()
         {
-            this.Dispatcher.Invoke(() =>
+            foreach (Guid id in _boundingBoxOverlays.Values.Select(x => x.Id))
             {
-                if (this._shapesOverlayIds.TryGetValue(ShapesOverlayKey.BoundingBox, out Guid id))
+                _imageViewer.ShapesOverlayRemove(id);
+            }
+
+            _boundingBoxOverlays.Clear();
+        }
+
+        private void DrawBoundingBoxes(IEnumerable<BoundingBox> boxes)
+        {
+            IEnumerable<Shape> BoundingBoxToShapes(BoundingBox box)
+            {
+                double pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+                Size imageSize = GetActualImageSize();
+
+                double x = box.X * imageSize.Width;
+                double y = box.Y * imageSize.Height;
+                double width = box.Width * imageSize.Width;
+                double height = box.Height * imageSize.Height;
+
+                yield return new Path
                 {
-                    this._imageViewer.ShapesOverlayRemove(id);
-                    this._shapesOverlayIds.Remove(ShapesOverlayKey.BoundingBox);
+                    Data = new RectangleGeometry(
+                        new Rect
+                        {
+                            X = x,
+                            Y = y,
+                            Width = width,
+                            Height = height
+                        }
+                    ),
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1
+                };
+
+                yield return ShapeUtil.FromText(
+                    $"{box.ObjectName}",
+                    new Point(x, y - 14),
+                    pixelsPerDip
+                );
+            }
+
+            foreach (BoundingBox box in boxes)
+            {
+                if (
+                    _boundingBoxOverlays.TryGetValue(
+                        box.TrackingNumber,
+                        out BoundingBoxOverlay overlay
+                    )
+                )
+                {
+                    _imageViewer.ShapesOverlayRemove(overlay.Id);
                 }
 
-                //if (!this.BoundingBoxVisible)
-                //{
-                //    return;
-                //}
+                Guid overlayId = _imageViewer.ShapesOverlayAdd(
+                    BoundingBoxToShapes(box).ToList(),
+                    new ShapesOverlayRenderParameters { FollowDigitalZoom = true, ZOrder = 1 }
+                );
+                _boundingBoxOverlays[box.TrackingNumber] = new BoundingBoxOverlay(
+                    box.TrackingNumber,
+                    overlayId,
+                    DateTimeOffset.Now
+                );
+            }
+        }
 
-                IEnumerable<Shape> BoundingBoxToShapes(BoundingBoxInfo box)
+        private void HideRules()
+        {
+            if (_ruleOverlayId != Guid.Empty)
+            {
+                _imageViewer.ShapesOverlayRemove(_ruleOverlayId);
+                _ruleOverlayId = Guid.Empty;
+            }
+        }
+
+        private void ShowRules()
+        {
+            HideRules();
+
+            if (!Rules.Any())
+            {
+                return;
+            }
+
+            Size imageSize = GetActualImageSize();
+            double scaleX = imageSize.Width / Constants.AI_IMAGE_WIDTH;
+            double scaleY = imageSize.Height / Constants.AI_IMAGE_HEIGHT;
+
+            IEnumerable<Shape> ConvertRuleToShapes(Rule rule)
+            {
+                yield return ShapeUtil.FromRule(rule, scaleX, scaleY);
+
+                if (RuleNameVisible)
                 {
-                    double pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-                    Size imageSize = GetActualImageSize();
-
-                    double x = box.X * imageSize.Width;
-                    double y = box.Y * imageSize.Height;
-                    double width = box.Width * imageSize.Width;
-                    double height = box.Height * imageSize.Height;
-
-                    yield return new Path
-                    {
-                        Data = new RectangleGeometry(
-                            new Rect
-                            {
-                                X = x,
-                                Y = y,
-                                Width = width,
-                                Height = height
-                            }
-                        ),
-                        Stroke = Brushes.Red,
-                        StrokeThickness = 1
-                    };
-
+                    var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
                     yield return ShapeUtil.FromText(
-                        $"{box.ObjectName}",
-                        new Point(x, y - 14),
+                        rule.Name,
+                        new Point
+                        {
+                            X = rule.Points[0][0] * scaleX,
+                            Y = rule.Points[0][1] * scaleY
+                        },
                         pixelsPerDip
                     );
                 }
+            }
 
-                IEnumerable<Shape> shapes = this._eventMetadata.BoundingBoxes.SelectMany(
-                    BoundingBoxToShapes
-                );
-                if (shapes.Any())
-                {
-                    ShapesOverlayRenderParameters parameters =
-                        new() { FollowDigitalZoom = true, ZOrder = 1 };
-
-                    this._shapesOverlayIds[ShapesOverlayKey.BoundingBox] =
-                        this._imageViewer.ShapesOverlayAdd(shapes.ToList(), parameters);
-                }
-            });
-        }
-
-        private void DrawRules()
-        {
-            this.Dispatcher.Invoke(() =>
-            {
-                if (this._shapesOverlayIds.TryGetValue(ShapesOverlayKey.Rule, out Guid id))
-                {
-                    this._imageViewer.ShapesOverlayRemove(id);
-                    this._shapesOverlayIds.Remove(ShapesOverlayKey.Rule);
-                }
-
-                if (!this.RuleVisible)
-                {
-                    return;
-                }
-
-                Size imageSize = GetActualImageSize();
-                double scaleX = imageSize.Width / Constants.AI_IMAGE_WIDTH;
-                double scaleY = imageSize.Height / Constants.AI_IMAGE_HEIGHT;
-
-                IEnumerable<Shape> ConvertRuleToShapes(Rule rule)
-                {
-                    yield return ShapeUtil.FromRule(rule, scaleX, scaleY);
-
-                    if (this.RuleNameVisible)
-                    {
-                        var pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-                        yield return ShapeUtil.FromText(
-                            rule.Name,
-                            new Point
-                            {
-                                X = rule.Points[0][0] * scaleX,
-                                Y = rule.Points[0][1] * scaleY
-                            },
-                            pixelsPerDip
-                        );
-                    }
-                }
-
-                IEnumerable<Shape> shapes = this.Rules.SelectMany(ConvertRuleToShapes);
-                if (!shapes.Any())
-                {
-                    return;
-                }
-
-                ShapesOverlayRenderParameters renderParameters =
-                    new() { FollowDigitalZoom = true, ZOrder = 2 };
-                this._shapesOverlayIds[ShapesOverlayKey.Rule] = this._imageViewer.ShapesOverlayAdd(
-                    shapes.ToList(),
-                    renderParameters
-                );
-            });
+            _ruleOverlayId = _imageViewer.ShapesOverlayAdd(
+                Rules.SelectMany(ConvertRuleToShapes).ToList(),
+                new ShapesOverlayRenderParameters { FollowDigitalZoom = true, ZOrder = 2 }
+            );
         }
 
         private void Update()
         {
-            this._messageRegisterObjects.ForEach(EnvironmentManager.Instance.UnRegisterReceiver);
-            this._messageRegisterObjects.Clear();
+            _messageRegisterObjects.ForEach(EnvironmentManager.Instance.UnRegisterReceiver);
+            _messageRegisterObjects.Clear();
 
-            if (this.SelectedDevice != null)
+            if (SelectedDevice != null)
             {
                 foreach (
                     var channel in new List<(string Name, MessageReceiver Handler)>
@@ -473,39 +503,38 @@ namespace BOHO.Client
                     }
                 )
                 {
-                    string topic = $"/device/{this.SelectedDevice.ID}/{channel.Name}";
+                    string topic = $"/device/{SelectedDevice.ID}/{channel.Name}";
                     MessageIdFilter messageFiler = new(topic);
                     object _messageRegisterObject = EnvironmentManager.Instance.RegisterReceiver(
                         channel.Handler,
                         messageFiler
                     );
-                    this._messageRegisterObjects.Add(_messageRegisterObject);
+                    _messageRegisterObjects.Add(_messageRegisterObject);
                 }
             }
 
-            if (this.SelectedCamera != null)
+            if (SelectedCamera != null)
             {
-                this._imageViewer.Disconnect();
-                this._imageViewer.CameraFQID = this.SelectedCamera.FQID;
-                this._imageViewer.EnableVisibleLiveIndicator = true;
-                this._imageViewer.EnableVisibleHeader = false;
-                this._imageViewer.MaintainImageAspectRatio = true;
-                this._imageViewer.EnableMouseControlledPtz = false;
-                this._imageViewer.EnableDigitalZoom = false;
-                this._imageViewer.Initialize();
-                this._imageViewer.Connect();
+                _imageViewer.Disconnect();
+                _imageViewer.CameraFQID = SelectedCamera.FQID;
+                _imageViewer.EnableVisibleLiveIndicator = true;
+                _imageViewer.EnableVisibleHeader = false;
+                _imageViewer.MaintainImageAspectRatio = true;
+                _imageViewer.EnableMouseControlledPtz = false;
+                _imageViewer.EnableDigitalZoom = false;
+                _imageViewer.Initialize();
+                _imageViewer.Connect();
             }
 
-            this.DrawRules();
+            ShowRules();
         }
 
         private Size GetActualImageSize()
         {
             double aspectRatio =
-                (double)this._imageViewer.ImageSize.Width
-                / (double)this._imageViewer.ImageSize.Height;
-            double actualWidth = this._imageViewer.ActualWidth;
-            double actualHeight = this._imageViewer.ActualHeight;
+                (double)_imageViewer.ImageSize.Width / (double)_imageViewer.ImageSize.Height;
+            double actualWidth = _imageViewer.ActualWidth;
+            double actualHeight = _imageViewer.ActualHeight;
             double actualAspectRatio = actualWidth / actualHeight;
 
             if (actualAspectRatio > aspectRatio)
