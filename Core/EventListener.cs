@@ -131,15 +131,20 @@ public class EventListener : IEventListener, IDisposable
                         ]
                         : jsonData["det"]
                             .ToObject<double[][]>()
-                            .Select(det => new BoundingBox
-                            {
-                                TrackingNumber = jsonData["tracking_number"].ToObject<int>(),
-                                X = det[0] / _imageWidth,
-                                Y = det[1] / _imageHeight,
-                                Width = (det[2] - det[0]) / _imageWidth,
-                                Height = (det[3] - det[1]) / _imageHeight,
-                                ObjectName = jsonData["labels"][(int)det[5]].ToString(),
-                            })
+                            .Select(
+                                (det, index) =>
+                                    new BoundingBox
+                                    {
+                                        TrackingNumber =
+                                            (int)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                                            + index,
+                                        X = det[0] / _imageWidth,
+                                        Y = det[1] / _imageHeight,
+                                        Width = (det[2] - det[0]) / _imageWidth,
+                                        Height = (det[3] - det[1]) / _imageHeight,
+                                        ObjectName = jsonData["labels"][(int)det[5]].ToString(),
+                                    }
+                            )
                 };
 
             EventReceived?.Invoke(this, args);
