@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BOHO.Core.Entities;
+using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
+using MQTTnet.Packets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -20,6 +22,7 @@ public interface IEventListener
 
 public class EventListener : IEventListener, IDisposable
 {
+    private readonly ILogger<EventListener> _logger;
     private readonly string _mqttTopic;
     private readonly string _mqttHost;
     private readonly int _mqttPort;
@@ -57,7 +60,7 @@ public class EventListener : IEventListener, IDisposable
         public DateTime EventTime { get; set; }
     }
 
-    public EventListener(BOHOConfiguration configuration)
+    public EventListener(ILogger<EventListener> logger, BOHOConfiguration configuration)
     {
         _mqttTopic = configuration.MqttTopic;
         _mqttHost = configuration.MqttHost;
@@ -66,14 +69,12 @@ public class EventListener : IEventListener, IDisposable
         _imageHeight = configuration.AnalyticImageHeight;
 
         _mqttClient = new MqttFactory().CreateManagedMqttClient();
-        _mqttClient.ApplicationMessageReceivedAsync +=
-            MqttClient_ApplicationMessageReceivedAsync;
+        _mqttClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
     }
 
     public void Dispose()
     {
-        _mqttClient.ApplicationMessageReceivedAsync -=
-            MqttClient_ApplicationMessageReceivedAsync;
+        _mqttClient.ApplicationMessageReceivedAsync -= MqttClient_ApplicationMessageReceivedAsync;
         _mqttClient.Dispose();
     }
 
@@ -84,8 +85,12 @@ public class EventListener : IEventListener, IDisposable
             throw new InvalidOperationException("The connection has been initialized");
         }
 
-        var topicFilter = new MqttTopicFilterBuilder().WithTopic(_mqttTopic).WithTopic("/test/milestone").Build();
-        await _mqttClient.SubscribeAsync([topicFilter]);
+        IEnumerable<MqttTopicFilter> topicFilters = new string[]
+        {
+            "/test/milestone",
+            _mqttTopic
+        }.Select(topic => new MqttTopicFilter { Topic = topic });
+        await _mqttClient.SubscribeAsync(topicFilters.ToList());
 
         // Setup and start a managed MQTT client.
         var clientOptions = new MqttClientOptionsBuilder()
@@ -107,13 +112,17 @@ public class EventListener : IEventListener, IDisposable
     {
         var payloadString = Encoding.UTF8.GetString([.. arg.ApplicationMessage.PayloadSegment]);
 
+        _logger.LogDebug("Received an event: {Event}", payloadString);
+
         try
         {
             JObject jsonData = JObject.Parse(payloadString);
             BOHOEventArgs args =
                 new()
                 {
-                    DeviceId = jsonData.ContainsKey("bounding_box") ? 84 : jsonData["camera_id"].ToObject<int>(),
+                    DeviceId = jsonData.ContainsKey("bounding_box")
+                        ? 84
+                        : jsonData["camera_id"].ToObject<int>(),
                     DeviceName = jsonData["camera_name"].ToString(),
                     BoundingBoxes = jsonData.ContainsKey("bounding_box")
                         ?
