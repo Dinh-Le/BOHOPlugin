@@ -22,7 +22,7 @@ public interface IEventListener
 
 public class EventListener : IEventListener, IDisposable
 {
-    private const int FlexwatchDeviceId = 85;
+    private const int FlexwatchDeviceId = 84;
     private const string FlexwatchMqttTopic = "/test/milestone";
     private readonly ILogger<EventListener> _logger;
     private readonly string _mqttTopic;
