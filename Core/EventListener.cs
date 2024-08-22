@@ -22,6 +22,8 @@ public interface IEventListener
 
 public class EventListener : IEventListener, IDisposable
 {
+    private const int FlexwatchDeviceId = 85;
+    private const string FlexwatchMqttTopic = "/test/milestone";
     private readonly ILogger<EventListener> _logger;
     private readonly string _mqttTopic;
     private readonly string _mqttHost;
@@ -33,35 +35,9 @@ public class EventListener : IEventListener, IDisposable
 
     public event EventHandler<BOHOEventArgs> EventReceived;
 
-    private class EventData
-    {
-        [JsonProperty("status")]
-        public string Status { get; set; }
-
-        [JsonProperty("camera_id")]
-        public int CameraId { get; set; }
-
-        [JsonProperty("camera_name")]
-        public string CameraName { get; set; }
-
-        [JsonProperty("labels")]
-        public List<string> Labels { get; set; }
-
-        [JsonProperty("det")]
-        public double[][] Det { get; set; }
-
-        [JsonProperty("image_path")]
-        public string ImagePath { get; set; }
-
-        [JsonProperty("preset_id")]
-        public int PresetId { get; set; }
-
-        [JsonProperty("event_time")]
-        public DateTime EventTime { get; set; }
-    }
-
     public EventListener(ILogger<EventListener> logger, BOHOConfiguration configuration)
     {
+        _logger = logger;
         _mqttTopic = configuration.MqttTopic;
         _mqttHost = configuration.MqttHost;
         _mqttPort = configuration.MqttPort;
@@ -87,9 +63,9 @@ public class EventListener : IEventListener, IDisposable
 
         IEnumerable<MqttTopicFilter> topicFilters = new string[]
         {
-            "/test/milestone",
+            FlexwatchMqttTopic,
             _mqttTopic
-        }.Select(topic => new MqttTopicFilter { Topic = topic });
+        }.Select(topic => new MqttTopicFilterBuilder().WithTopic(topic).Build());
         await _mqttClient.SubscribeAsync(topicFilters.ToList());
 
         // Setup and start a managed MQTT client.
@@ -117,12 +93,15 @@ public class EventListener : IEventListener, IDisposable
         try
         {
             JObject jsonData = JObject.Parse(payloadString);
+
+            int deviceId = arg.ApplicationMessage.Topic.Equals(FlexwatchMqttTopic)
+                ? FlexwatchDeviceId
+                : jsonData["camera_id"].ToObject<int>();
+
             BOHOEventArgs args =
                 new()
                 {
-                    DeviceId = jsonData.ContainsKey("bounding_box")
-                        ? 84
-                        : jsonData["camera_id"].ToObject<int>(),
+                    DeviceId = deviceId,
                     DeviceName = jsonData["camera_name"].ToString(),
                     BoundingBoxes = jsonData.ContainsKey("bounding_box")
                         ?
@@ -154,11 +133,12 @@ public class EventListener : IEventListener, IDisposable
                             .ToObject<double[][]>()
                             .Select(det => new BoundingBox
                             {
+                                TrackingNumber = jsonData["tracking_number"].ToObject<int>(),
                                 X = det[0] / _imageWidth,
                                 Y = det[1] / _imageHeight,
                                 Width = (det[2] - det[0]) / _imageWidth,
                                 Height = (det[3] - det[1]) / _imageHeight,
-                                ObjectName = jsonData["labels"][(int)det[5]].ToString()
+                                ObjectName = jsonData["labels"][(int)det[5]].ToString(),
                             })
                 };
 
