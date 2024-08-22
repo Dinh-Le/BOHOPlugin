@@ -62,6 +62,7 @@ public class EventListener : IEventListener, IDisposable
 
     public EventListener(ILogger<EventListener> logger, BOHOConfiguration configuration)
     {
+        _logger = logger;
         _mqttTopic = configuration.MqttTopic;
         _mqttHost = configuration.MqttHost;
         _mqttPort = configuration.MqttPort;
@@ -89,7 +90,7 @@ public class EventListener : IEventListener, IDisposable
         {
             "/test/milestone",
             _mqttTopic
-        }.Select(topic => new MqttTopicFilter { Topic = topic });
+        }.Select(topic => new MqttTopicFilterBuilder().WithTopic(topic).Build());
         await _mqttClient.SubscribeAsync(topicFilters.ToList());
 
         // Setup and start a managed MQTT client.
