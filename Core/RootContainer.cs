@@ -48,7 +48,7 @@ namespace BOHO.Core
                         Username = "root",
                         Password = "Goback@2021",
                         MilestoneId = 6,
-                        MqttTopic = "service-communicate",
+                        MqttTopic = "milestone-communicate",
                         MqttHost = "192.168.100.14",
                         MqttPort = 1883,
                         AnalyticImageWidth = 1920,
