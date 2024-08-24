@@ -64,6 +64,7 @@ public class EventListener : IEventListener, IDisposable
         IEnumerable<MqttTopicFilter> topicFilters = new string[]
         {
             FlexwatchMqttTopic,
+            "service-communicate",
             _mqttTopic
         }.Select(topic => new MqttTopicFilterBuilder().WithTopic(topic).Build());
         await _mqttClient.SubscribeAsync(topicFilters.ToList());
@@ -133,7 +134,7 @@ public class EventListener : IEventListener, IDisposable
                             .ToObject<double[][]>()
                             .Select(det => new BoundingBox
                             {
-                                TrackingNumber = jsonData["tracking_number"].ToObject<int>(),
+                                TrackingNumber = (int)det[4],
                                 X = det[0] / _imageWidth,
                                 Y = det[1] / _imageHeight,
                                 Width = (det[2] - det[0]) / _imageWidth,
@@ -144,9 +145,9 @@ public class EventListener : IEventListener, IDisposable
 
             EventReceived?.Invoke(this, args);
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore
+            _logger.LogError(ex, "Error");
         }
 
         return Task.CompletedTask;
