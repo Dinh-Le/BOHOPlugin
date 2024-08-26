@@ -415,7 +415,7 @@ namespace BOHO.Client
                 };
 
                 yield return ShapeUtil.FromText(
-                    $"{box.ObjectName}",
+                    $"{box.ObjectName} - track id {box.TrackingNumber}",
                     new Point(x, y - 14),
                     pixelsPerDip
                 );
@@ -430,18 +430,25 @@ namespace BOHO.Client
                     )
                 )
                 {
-                    _imageViewer.ShapesOverlayRemove(overlay.Id);
+                    _imageViewer.ShapesOverlayUpdate(overlay.Id, BoundingBoxToShapes(box).ToList());
+                    _boundingBoxOverlays[box.TrackingNumber] = new BoundingBoxOverlay(
+                        box.TrackingNumber,
+                        overlay.Id,
+                        DateTimeOffset.Now
+                    );
                 }
-
-                Guid overlayId = _imageViewer.ShapesOverlayAdd(
-                    BoundingBoxToShapes(box).ToList(),
-                    _boundingBoxOverlayRenderParams
-                );
-                _boundingBoxOverlays[box.TrackingNumber] = new BoundingBoxOverlay(
-                    box.TrackingNumber,
-                    overlayId,
-                    DateTimeOffset.Now
-                );
+                else
+                {
+                    Guid overlayId = _imageViewer.ShapesOverlayAdd(
+                        BoundingBoxToShapes(box).ToList(),
+                        _boundingBoxOverlayRenderParams
+                    );
+                    _boundingBoxOverlays[box.TrackingNumber] = new BoundingBoxOverlay(
+                        box.TrackingNumber,
+                        overlayId,
+                        DateTimeOffset.Now
+                    );
+                }
             }
         }
 

@@ -94,6 +94,7 @@ public class EventListener : IEventListener, IDisposable
         try
         {
             JObject jsonData = JObject.Parse(payloadString);
+            string[] objects = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck"];
 
             int deviceId = arg.ApplicationMessage.Topic.Equals(FlexwatchMqttTopic)
                 ? FlexwatchDeviceId
@@ -103,7 +104,7 @@ public class EventListener : IEventListener, IDisposable
                 new()
                 {
                     DeviceId = deviceId,
-                    DeviceName = jsonData["camera_name"].ToString(),
+                    //DeviceName = jsonData["camera_name"].ToString(),
                     BoundingBoxes = jsonData.ContainsKey("bounding_box")
                         ?
                         [
@@ -132,6 +133,7 @@ public class EventListener : IEventListener, IDisposable
                         ]
                         : jsonData["det"]
                             .ToObject<double[][]>()
+                            .Where((det) => objects.Contains(jsonData["labels"][(int)det[5]].ToString()))
                             .Select(det => new BoundingBox
                             {
                                 TrackingNumber = (int)det[4],
