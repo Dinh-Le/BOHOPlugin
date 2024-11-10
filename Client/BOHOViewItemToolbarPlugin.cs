@@ -7,7 +7,8 @@ using VideoOS.Platform.Client.Export;
 
 namespace BOHO.Client
 {
-    internal class BOHOViewItemToolbarPluginInstance(ViewItemToolbarPluginViewModel viewModel) : ViewItemToolbarPluginInstance
+    internal class BOHOViewItemToolbarPluginInstance(ViewItemToolbarPluginViewModel viewModel)
+        : ViewItemToolbarPluginInstance
     {
         private readonly ViewItemToolbarPluginViewModel _viewModel = viewModel;
 
@@ -19,8 +20,8 @@ namespace BOHO.Client
             _viewModel.Init(viewItemInstance.GetViewItemProperties());
         }
 
-        public override ToolbarPluginWpfUserControl GenerateWpfUserControl()
-            => new ViewItemToolbarPluginWpfUserControl(_viewModel);
+        public override ToolbarPluginWpfUserControl GenerateWpfUserControl() =>
+            new ViewItemToolbarPluginWpfUserControl(_viewModel);
 
         public override void Close() { }
     }
@@ -45,7 +46,7 @@ namespace BOHO.Client
 
         public override void Close() { }
 
-        public override ViewItemToolbarPluginInstance GenerateViewItemToolbarPluginInstance()
-            => RootContainer.Get<BOHOViewItemToolbarPluginInstance>();
+        public override ViewItemToolbarPluginInstance GenerateViewItemToolbarPluginInstance() =>
+            RootContainer.Get<BOHOViewItemToolbarPluginInstance>();
     }
 }

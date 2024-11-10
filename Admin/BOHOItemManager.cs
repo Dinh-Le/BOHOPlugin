@@ -8,19 +8,19 @@ using VideoOS.Platform.Admin;
 namespace BOHO.Admin
 {
     /// <summary>
-    /// This class is created once for all Items of a specific Kind and is responsible for getting and saving configuration for 
+    /// This class is created once for all Items of a specific Kind and is responsible for getting and saving configuration for
     /// all Items of that Kind<br/>
     /// <br/>
-    /// This class is also responsible for creating, filling and saving 
+    /// This class is also responsible for creating, filling and saving
     /// UserControl and relevant fields changed by the user in the administrators.<br/>
     /// Normally there will be one ItemManager for each ItemNode.<br/>
     /// If the Items being managed are stored on another server, then this class can utilize
-    /// the Init() and Close() methods to setup sessions to the remote server in anticipation 
+    /// the Init() and Close() methods to setup sessions to the remote server in anticipation
     /// of calls to GetItems().<br/>
     /// <br/>
     /// <b>EventServer and Items on MAP</b><br/>
-    /// This class is also involved in defining ContextMenu on the SmartClient MAP, because the plugin 
-    /// executing in the Event Server, are providing the Smart Client MAP ViewItem with 
+    /// This class is also involved in defining ContextMenu on the SmartClient MAP, because the plugin
+    /// executing in the Event Server, are providing the Smart Client MAP ViewItem with
     /// all relevant plugins and their definitions.<br/>
     /// As the Event Server uses authorization for Items, the ItemNode needs to define the SecurityActions
     /// relevant for the items being managed by the ItemManager. A minimum of two SecurityActions must always be defined
@@ -40,16 +40,16 @@ namespace BOHO.Admin
     /// When de-selecting an item, the ItemManager.FillUserControl(null) is called to let the ItemManager clear the UserControl. The parent UserControl will also have Enabled=false; set shortly after this call.<br/>
     /// <br/>
     /// <b>Item edit and update</b><br/>
-    /// After an Item is selected or created, the system needs to know if any updates have been done by the administrator.  
-    /// Ensure the ConfigurationChangedByUserHandler is called whenever the administrator changes something on the UI.  
+    /// After an Item is selected or created, the system needs to know if any updates have been done by the administrator.
+    /// Ensure the ConfigurationChangedByUserHandler is called whenever the administrator changes something on the UI.
     /// This will allow the administration application to enable Save and Apply buttons as appropriate.<br/>
     /// When the administrator presses a Save or Apply button, the:<br/>
-    ///     public bool ValidateAndSaveUserEntry()<br/> 
+    ///     public bool ValidateAndSaveUserEntry()<br/>
     /// is called to let the ItemManager and the underlying UserControl validate the entered values. If fields are valid the method returns true.
     /// <br/>
     /// <br/>
     /// <b>TreeView name change</b><br/>
-    /// On the TreeView itself, it is possible to press F2 and edit the name directly. In this case the updated name is passed to the ItemManager via the 
+    /// On the TreeView itself, it is possible to press F2 and edit the name directly. In this case the updated name is passed to the ItemManager via the
     /// SetItemName(name) method.<br/>
     /// The ItemManager should save the new name immediately.<br/>
     /// </summary>
@@ -60,7 +60,8 @@ namespace BOHO.Admin
 
         #region Constructors
 
-        public BOHOItemManager(Guid kind) : base()
+        public BOHOItemManager(Guid kind)
+            : base()
         {
             _kind = kind;
         }
@@ -69,17 +70,13 @@ namespace BOHO.Admin
         /// Is called when the Environment is initializing, and will soon call GetItem methods
         /// IF you need to establish connection to a remote server, this is a good place to initialize.
         /// </summary>
-        public override void Init()
-        {
-        }
+        public override void Init() { }
 
         /// <summary>
         /// Is called when server is changing or application is closing down.
         /// You should close any remote session you may have, and flush cache.
         /// </summary>
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         #endregion
 
@@ -92,7 +89,9 @@ namespace BOHO.Admin
         public override UserControl GenerateDetailUserControl()
         {
             _userControl = new BOHOUserControl();
-            _userControl.ConfigurationChangedByUser += new EventHandler(ConfigurationChangedByUserHandler);
+            _userControl.ConfigurationChangedByUser += new EventHandler(
+                ConfigurationChangedByUserHandler
+            );
             return _userControl;
         }
 
@@ -103,7 +102,9 @@ namespace BOHO.Admin
         {
             if (_userControl != null)
             {
-                _userControl.ConfigurationChangedByUser -= new EventHandler(ConfigurationChangedByUserHandler);
+                _userControl.ConfigurationChangedByUser -= new EventHandler(
+                    ConfigurationChangedByUserHandler
+                );
                 _userControl = null;
             }
         }
@@ -138,7 +139,7 @@ namespace BOHO.Admin
         /// Just fill the user control with default content, but do NOT add it to your configuration yet.<br/>
         /// Implementation of this method will determine the flow of calls for creating new Items.<br/>
         /// When implemented, this UserControl is shown to the user, and upon OK pressed the ValidateAddUserControl is called
-        /// for the plugin to validate the entry, and a OK response will result in closing the form containing the AddUserControl and 
+        /// for the plugin to validate the entry, and a OK response will result in closing the form containing the AddUserControl and
         /// a call the the Create() method including the AddUserControl.<br/>
         /// If not implementing this method, the Create() method WITHOUT the AddUserControl parameter is called, and a default
         /// Item is then created, stored (where ever this ItemManager stores it configuration), and displayed in the
@@ -193,7 +194,7 @@ namespace BOHO.Admin
         /// <summary>
         /// Validate the user entry, and return true for OK.<br/>
         /// External configuration should be saved during this call.<br/>
-        /// Any errors should be displayed to the user, and the field in 
+        /// Any errors should be displayed to the user, and the field in
         /// error should get focus.
         /// </summary>
         /// <returns>Indicates error in user entry.  True is a valid entry</returns>
@@ -208,18 +209,21 @@ namespace BOHO.Admin
                 }
 
                 //In this template we save configuration on the VMS system
-                Configuration.Instance.SaveItemConfiguration(BOHODefinition.BOHOPluginId, CurrentItem);
+                Configuration.Instance.SaveItemConfiguration(
+                    BOHODefinition.BOHOPluginId,
+                    CurrentItem
+                );
             }
             return true;
         }
 
         /// <summary>
-        /// Create a new item. Insert default values. 
+        /// Create a new item. Insert default values.
         /// The parentFQID can be null, when a top level node is created (e.g. no parent)
         /// The new fqid should be filled with ServerID, ParentId, ObjectId or ObjectIdString and Kind.
         /// </summary>
         /// <param name="parentItem">Identifies the configuration parent to the new item.</param>
-        /// <param name="suggestedFQID">A pre-generated fqid with above fields filled. 
+        /// <param name="suggestedFQID">A pre-generated fqid with above fields filled.
         /// The ObjectId or ObjectIdString can be overridden.</param>
         /// <returns>A new Item, only the FQID and Name field are required to be filled.  The return values is used to identify and select the item tree node</returns>
         public override Item CreateItem(Item parentItem, FQID suggestedFQID)
@@ -239,11 +243,15 @@ namespace BOHO.Admin
         /// The new fqid should be filled with ServerID, ParentId, ObjectId or ObjectIdString and Kind.
         /// </summary>
         /// <param name="parentItem">Identifies the configuration parent to the new item.</param>
-        /// <param name="suggestedFQID">A pre-generated fqid with above fields filled. 
+        /// <param name="suggestedFQID">A pre-generated fqid with above fields filled.
         /// The ObjectId or ObjectIdString can be overridden.</param>
         /// <param name="addUserControl">A filled user control returned by the GeneratedAddUserControl method after it has been displayed and edited by the user</param>
         /// <returns>A new Item, only the FQID and Name field are required to be filled.  The return value is used to identify and select the item tree node</returns>
-        public override Item CreateItem(Item parentItem, FQID suggestedFQID, UserControl addUserControl)
+        public override Item CreateItem(
+            Item parentItem,
+            FQID suggestedFQID,
+            UserControl addUserControl
+        )
         {
             CurrentItem = new Item(suggestedFQID, ((BOHOAddUserControl)addUserControl).ItemName);
             Configuration.Instance.SaveItemConfiguration(BOHODefinition.BOHOPluginId, CurrentItem);
@@ -251,7 +259,7 @@ namespace BOHO.Admin
         }
 
         /// <summary>
-        /// When an administrator selects the context menu Delete item, or press the DEL key, 
+        /// When an administrator selects the context menu Delete item, or press the DEL key,
         /// a confirmation dialog is displayed and upon administrator confirms this method is called.
         /// <code>
         /// For configurations saved on the video server, the following code can be used:
@@ -268,7 +276,6 @@ namespace BOHO.Admin
             {
                 Configuration.Instance.DeleteItemConfiguration(BOHODefinition.BOHOPluginId, item);
             }
-
         }
         #endregion
 
@@ -281,7 +288,11 @@ namespace BOHO.Admin
         public override List<Item> GetItems()
         {
             //All items in this sample are stored with the Video, therefor no ServerIs or parent ids is used.
-            List<Item> items = Configuration.Instance.GetItemConfigurations(BOHODefinition.BOHOPluginId, null, _kind);
+            List<Item> items = Configuration.Instance.GetItemConfigurations(
+                BOHODefinition.BOHOPluginId,
+                null,
+                _kind
+            );
             return items;
         }
 
@@ -292,7 +303,11 @@ namespace BOHO.Admin
         /// <returns>A list of items.  Allowed to return null if no Items found.</returns>
         public override List<Item> GetItems(Item parentItem)
         {
-            List<Item> items = Configuration.Instance.GetItemConfigurations(BOHODefinition.BOHOPluginId, parentItem, _kind);
+            List<Item> items = Configuration.Instance.GetItemConfigurations(
+                BOHODefinition.BOHOPluginId,
+                parentItem,
+                _kind
+            );
             return items;
         }
 
@@ -303,7 +318,11 @@ namespace BOHO.Admin
         /// <returns>An Item</returns>
         public override Item GetItem(FQID fqid)
         {
-            Item item = Configuration.Instance.GetItemConfiguration(BOHODefinition.BOHOPluginId, _kind, fqid.ObjectId);
+            Item item = Configuration.Instance.GetItemConfiguration(
+                BOHODefinition.BOHOPluginId,
+                _kind,
+                fqid.ObjectId
+            );
             return item;
         }
 
@@ -315,8 +334,10 @@ namespace BOHO.Admin
         /// Return all the Event groups this Kind of Item can deliver to the Event Server and Alarm Definition.
         /// This list is used for configuring alarms.
         /// </summary>
-        /// <returns></returns>		
-        public override System.Collections.ObjectModel.Collection<VideoOS.Platform.Data.EventGroup> GetKnownEventGroups(System.Globalization.CultureInfo culture)
+        /// <returns></returns>
+        public override System.Collections.ObjectModel.Collection<VideoOS.Platform.Data.EventGroup> GetKnownEventGroups(
+            System.Globalization.CultureInfo culture
+        )
         {
             return new System.Collections.ObjectModel.Collection<VideoOS.Platform.Data.EventGroup>();
         }
@@ -325,8 +346,10 @@ namespace BOHO.Admin
         /// Return all the Event Types, within the group this Kind of Item can deliver to the Event Server.
         /// This list is used for configuring alarms.
         /// </summary>
-        /// <returns></returns>		
-        public override System.Collections.ObjectModel.Collection<VideoOS.Platform.Data.EventType> GetKnownEventTypes(System.Globalization.CultureInfo culture)
+        /// <returns></returns>
+        public override System.Collections.ObjectModel.Collection<VideoOS.Platform.Data.EventType> GetKnownEventTypes(
+            System.Globalization.CultureInfo culture
+        )
         {
             return new System.Collections.ObjectModel.Collection<VideoOS.Platform.Data.EventType>();
         }
@@ -339,7 +362,7 @@ namespace BOHO.Admin
         /// <returns></returns>
         public override OperationalState GetOperationalState(Item item)
         {
-            return OperationalState.Ok;     // Everything is OK for the sepcified Item
+            return OperationalState.Ok; // Everything is OK for the sepcified Item
         }
 
         /// <summary>
@@ -355,10 +378,8 @@ namespace BOHO.Admin
         /// <returns></returns>
         public override bool IsContextMenuValid(string command)
         {
-            return true;        // By default all commands are valid
+            return true; // By default all commands are valid
         }
         #endregion
-
     }
 }
-

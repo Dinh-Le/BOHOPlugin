@@ -24,7 +24,7 @@ namespace BOHO.Application.Util
             {
                 Data = textGeometry,
                 Stroke = Brushes.Black,
-                StrokeThickness = 1
+                StrokeThickness = 1,
             };
         }
 

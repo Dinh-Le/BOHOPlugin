@@ -35,13 +35,9 @@ namespace BOHO.Admin
         /// <summary>
         /// This method is called when the user has logged in and configuration is accessible.<br/>
         /// </summary>
-        public override void Init()
-        {
-        }
+        public override void Init() { }
 
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         public override TabUserControl GenerateUserControl(Item item)
         {

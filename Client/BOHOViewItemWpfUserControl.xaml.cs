@@ -407,11 +407,11 @@ namespace BOHO.Client
                             X = x,
                             Y = y,
                             Width = width,
-                            Height = height
+                            Height = height,
                         }
                     ),
                     Stroke = Brushes.Red,
-                    StrokeThickness = 1
+                    StrokeThickness = 1,
                 };
 
                 yield return ShapeUtil.FromText(
@@ -486,7 +486,7 @@ namespace BOHO.Client
                         new Point
                         {
                             X = rule.Points[0][0] * scaleX,
-                            Y = rule.Points[0][1] * scaleY
+                            Y = rule.Points[0][1] * scaleY,
                         },
                         pixelsPerDip
                     );
@@ -511,7 +511,7 @@ namespace BOHO.Client
                     {
                         new("rule_visibility", OnRuleVisibilityChanged),
                         new("rule_name_visibility", OnRuleNameVisibilityChanged),
-                        new("bounding_visibility", OnBoundingBoxVisibilityChanged)
+                        new("bounding_visibility", OnBoundingBoxVisibilityChanged),
                     }
                 )
                 {

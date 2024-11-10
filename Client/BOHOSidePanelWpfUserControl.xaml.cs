@@ -12,13 +12,9 @@ namespace BOHO.Client
             InitializeComponent();
         }
 
-        public override void Init()
-        {
-        }
+        public override void Init() { }
 
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         /// <summary>
         /// Sample code to show how to maximize the current view item to fill the entire layout area.
@@ -29,7 +25,10 @@ namespace BOHO.Client
         {
             EnvironmentManager.Instance.SendMessage(
                 new Message(MessageId.SmartClient.ViewItemControlCommand)
-                { Data = ViewItemControlCommandData.MaximizeSelectedViewItem });
+                {
+                    Data = ViewItemControlCommandData.MaximizeSelectedViewItem,
+                }
+            );
         }
 
         /// <summary>
@@ -41,7 +40,10 @@ namespace BOHO.Client
         {
             EnvironmentManager.Instance.SendMessage(
                 new Message(MessageId.SmartClient.ViewItemControlCommand)
-                { Data = ViewItemControlCommandData.RestoreSelectedViewItem });
+                {
+                    Data = ViewItemControlCommandData.RestoreSelectedViewItem,
+                }
+            );
         }
     }
 }

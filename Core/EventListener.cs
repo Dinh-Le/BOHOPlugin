@@ -65,7 +65,7 @@ public class EventListener : IEventListener, IDisposable
         {
             FlexwatchMqttTopic,
             "service-communicate",
-            _mqttTopic
+            _mqttTopic,
         }.Select(topic => new MqttTopicFilterBuilder().WithTopic(topic).Build());
         await _mqttClient.SubscribeAsync(topicFilters.ToList());
 
@@ -94,7 +94,17 @@ public class EventListener : IEventListener, IDisposable
         try
         {
             JObject jsonData = JObject.Parse(payloadString);
-            string[] objects = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck"];
+            string[] objects =
+            [
+                "person",
+                "bicycle",
+                "car",
+                "motorcycle",
+                "airplane",
+                "bus",
+                "train",
+                "truck",
+            ];
 
             int deviceId = arg.ApplicationMessage.Topic.Equals(FlexwatchMqttTopic)
                 ? FlexwatchDeviceId
@@ -128,12 +138,15 @@ public class EventListener : IEventListener, IDisposable
                                         - jsonData["bounding_box"]["toplefty"].ToObject<int>()
                                     ) / _imageHeight,
                                 ObjectName = jsonData["object_type"].ToString(),
-                                Timestamp = jsonData["event_time"].ToObject<DateTime>()
-                            }
+                                Timestamp = jsonData["event_time"].ToObject<DateTime>(),
+                            },
                         ]
                         : jsonData["det"]
                             .ToObject<double[][]>()
-                            .Where((det) => objects.Contains(jsonData["labels"][(int)det[5]].ToString()))
+                            .Where(
+                                (det) =>
+                                    objects.Contains(jsonData["labels"][(int)det[5]].ToString())
+                            )
                             .Select(det => new BoundingBox
                             {
                                 TrackingNumber = (int)det[4],
@@ -142,7 +155,7 @@ public class EventListener : IEventListener, IDisposable
                                 Width = (det[2] - det[0]) / _imageWidth,
                                 Height = (det[3] - det[1]) / _imageHeight,
                                 ObjectName = jsonData["labels"][(int)det[5]].ToString(),
-                            })
+                            }),
                 };
 
             EventReceived?.Invoke(this, args);

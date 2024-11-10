@@ -135,7 +135,7 @@ namespace BOHO.Infrastructure.Repositories
                                 IsPTZ = device.Camera.Type.Equals(
                                     "ptz",
                                     System.StringComparison.OrdinalIgnoreCase
-                                )
+                                ),
                             }
                         );
                     }
@@ -146,7 +146,7 @@ namespace BOHO.Infrastructure.Repositories
                     {
                         Id = node.Id,
                         Name = node.Name,
-                        Devices = deviceList
+                        Devices = deviceList,
                     }
                 );
             }
@@ -158,7 +158,7 @@ namespace BOHO.Infrastructure.Repositories
                 new UserLoginRequest
                 {
                     Name = _configuration.Username,
-                    Password = _configuration.Password
+                    Password = _configuration.Password,
                 }
             );
             var response = await httpClient.PostAsync(

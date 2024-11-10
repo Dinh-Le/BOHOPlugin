@@ -7,6 +7,7 @@ namespace BOHO.Client
     {
         private readonly BOHOSettingsPanelPlugin _plugin;
         private const string _propertyId = "aSettingId";
+
         public BOHOSettingsPanelControl(BOHOSettingsPanelPlugin plugin)
         {
             _plugin = plugin;

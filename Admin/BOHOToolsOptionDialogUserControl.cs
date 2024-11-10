@@ -9,13 +9,9 @@ namespace BOHO.Admin
             InitializeComponent();
         }
 
-        public override void Init()
-        {
-        }
+        public override void Init() { }
 
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         public string MyPropValue
         {

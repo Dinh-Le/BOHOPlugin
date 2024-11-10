@@ -52,7 +52,7 @@ namespace BOHO.Core
                         MqttHost = "192.168.100.14",
                         MqttPort = 1883,
                         AnalyticImageWidth = 1920,
-                        AnalyticImageHeight = 1080
+                        AnalyticImageHeight = 1080,
                     }
                 )
                 .AddSingleton<IBOHORepository, BOHORepository>()

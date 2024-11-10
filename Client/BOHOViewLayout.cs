@@ -14,7 +14,15 @@ namespace BOHO.Client
 
         public override Rectangle[] Rectangles
         {
-            get { return new Rectangle[] { new Rectangle(000, 000, 999, 499), new Rectangle(000, 499, 499, 499), new Rectangle(499, 499, 499, 499) }; }
+            get
+            {
+                return new Rectangle[]
+                {
+                    new Rectangle(000, 000, 999, 499),
+                    new Rectangle(000, 499, 499, 499),
+                    new Rectangle(499, 499, 499, 499),
+                };
+            }
             set { }
         }
 

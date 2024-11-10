@@ -9,9 +9,7 @@ namespace BOHO.Client
     {
         private Item _window;
 
-        public BOHOWorkSpaceToolbarPluginInstance()
-        {
-        }
+        public BOHOWorkSpaceToolbarPluginInstance() { }
 
         public override void Init(Item window)
         {
@@ -25,17 +23,12 @@ namespace BOHO.Client
             // Here you should put whatever action that should be executed when the toolbar button is pressed
         }
 
-        public override void Close()
-        {
-        }
-
+        public override void Close() { }
     }
 
     internal class BOHOWorkSpaceToolbarPlugin : WorkSpaceToolbarPlugin
     {
-        public BOHOWorkSpaceToolbarPlugin()
-        {
-        }
+        public BOHOWorkSpaceToolbarPlugin() { }
 
         public override Guid Id
         {
@@ -52,16 +45,24 @@ namespace BOHO.Client
             // TODO: remove below check when BOHODefinition.BOHOWorkSpaceToolbarPluginId has been replaced with proper GUID
             if (Id == new Guid("22222222-2222-2222-2222-222222222222"))
             {
-                System.Windows.MessageBox.Show("Default GUID has not been replaced for BOHOWorkSpaceToolbarPluginId!");
+                System.Windows.MessageBox.Show(
+                    "Default GUID has not been replaced for BOHOWorkSpaceToolbarPluginId!"
+                );
             }
 
-            WorkSpaceToolbarPlaceDefinition.WorkSpaceIds = new List<Guid>() { ClientControl.LiveBuildInWorkSpaceId, ClientControl.PlaybackBuildInWorkSpaceId, BOHODefinition.BOHOWorkSpacePluginId };
-            WorkSpaceToolbarPlaceDefinition.WorkSpaceStates = new List<WorkSpaceState>() { WorkSpaceState.Normal };
+            WorkSpaceToolbarPlaceDefinition.WorkSpaceIds = new List<Guid>()
+            {
+                ClientControl.LiveBuildInWorkSpaceId,
+                ClientControl.PlaybackBuildInWorkSpaceId,
+                BOHODefinition.BOHOWorkSpacePluginId,
+            };
+            WorkSpaceToolbarPlaceDefinition.WorkSpaceStates = new List<WorkSpaceState>()
+            {
+                WorkSpaceState.Normal,
+            };
         }
 
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         public override WorkSpaceToolbarPluginInstance GenerateWorkSpaceToolbarPluginInstance()
         {

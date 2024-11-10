@@ -16,16 +16,12 @@ namespace BOHO.Client
         /// This method is called when the Environment is up and configuration is loaded.
         /// This method is called once every time the user logins in.
         /// </summary>
-        public override void Init()
-        {
-        }
+        public override void Init() { }
 
         /// <summary>
         /// Flush any configuration or dynamic resources.
         /// </summary>
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         ///// <summary>
         ///// Only use this method if support for Smart Client prior to 2017 R3 is required.
@@ -58,7 +54,6 @@ namespace BOHO.Client
             get { return BOHODefinition.BOHOSidePanel; }
         }
 
-
         /// <summary>
         /// Name of panel - displayed on top of user control
         /// </summary>
@@ -74,14 +69,15 @@ namespace BOHO.Client
         {
             get
             {
-                return [
-                    new() {
+                return
+                [
+                    new()
+                    {
                         WorkSpaceId = ClientControl.LiveBuildInWorkSpaceId,
-                        WorkSpaceStates = [WorkSpaceState.Normal]
-                    }
+                        WorkSpaceStates = [WorkSpaceState.Normal],
+                    },
                 ];
             }
         }
-
     }
 }

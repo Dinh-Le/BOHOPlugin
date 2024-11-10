@@ -14,7 +14,6 @@ namespace BOHO.Admin
     {
         internal event EventHandler ConfigurationChangedByUser;
 
-
         public BOHOUserControl()
         {
             InitializeComponent();
@@ -53,6 +52,5 @@ namespace BOHO.Admin
         {
             textBoxName.Text = "";
         }
-
     }
 }

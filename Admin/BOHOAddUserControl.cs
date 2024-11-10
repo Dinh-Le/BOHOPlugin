@@ -12,7 +12,7 @@ namespace BOHO.Admin
     /// <summary>
     /// This control should contain the fields required for generating a valid Item.
     /// The template only has a Name field, but other fields should be added as required.
-    /// 
+    ///
     /// This dialog will be opened in a new form when user is selecting "New... " on the context menu in the administrator.
     /// When user presses "OK" the ItemManager.ValidateAddUserControl is called for validation, and if correct,
     /// the ItemManager.CreateItem is called with this class as the 3rd parameter.

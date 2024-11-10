@@ -19,13 +19,15 @@ namespace BOHO.Client
         /// <summary>
         /// Should return the title of this plug-in. It will be displayed in the Settings panel navigation list.
         /// </summary>
-        public override string Title { get { return "BOHO"; } }
+        public override string Title
+        {
+            get { return "BOHO"; }
+        }
 
         /// <summary>
         /// This method is called just before the Settings panel is closed.
         /// </summary>
-        public override void Close()
-        { }
+        public override void Close() { }
 
         /// <summary>
         /// Should close the user control and clean up any resources or event registrations. <br>
@@ -55,9 +57,9 @@ namespace BOHO.Client
         }
 
         /// <summary>
-		/// Should save any changes made in the user control. If the save operation fails, use errorMessage to provide a string describing the error. <br>
-		/// This method should be overridden by the plug-in to validate the entries and possibly call <see cref="SaveProperties(bool)"/> to have the properties stored on the server. 
-		/// (If the values have been set using <see cref="PropertyClass.SetProperty(string, string)"/>)
+        /// Should save any changes made in the user control. If the save operation fails, use errorMessage to provide a string describing the error. <br>
+        /// This method should be overridden by the plug-in to validate the entries and possibly call <see cref="SaveProperties(bool)"/> to have the properties stored on the server.
+        /// (If the values have been set using <see cref="PropertyClass.SetProperty(string, string)"/>)
         /// </summary>
         /// <param name="errorMessage">The error description if saving failed. An empty string if successfully saved.</param>
         /// <returns>True if settings were successfully saved, otherwise false.</returns>

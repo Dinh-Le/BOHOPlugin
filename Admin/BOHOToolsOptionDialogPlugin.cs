@@ -14,7 +14,9 @@ namespace BOHO.Admin
             // TODO: remove below check once BOHODefinition.BOHOToolsOptionDialogPluginId has been replaced with proper GUID
             if (Id == new Guid("44444444-4444-4444-4444-444444444444"))
             {
-                System.Windows.MessageBox.Show("Default GUID has not been replaced for BOHOToolsOptionDialogPluginId!");
+                System.Windows.MessageBox.Show(
+                    "Default GUID has not been replaced for BOHOToolsOptionDialogPluginId!"
+                );
             }
 
             //Note: Do not try to get option settings here!
@@ -31,8 +33,13 @@ namespace BOHO.Admin
         /// <returns></returns>
         public override bool SaveChanges()
         {
-            if (_myUserControl == null) return true;
-            VideoOS.Platform.Configuration.Instance.SaveOptionsConfiguration(_myPropertyId, true, ToXml("ToolsOption", _myUserControl.MyPropValue));
+            if (_myUserControl == null)
+                return true;
+            VideoOS.Platform.Configuration.Instance.SaveOptionsConfiguration(
+                _myPropertyId,
+                true,
+                ToXml("ToolsOption", _myUserControl.MyPropValue)
+            );
             return true;
         }
 
@@ -46,11 +53,14 @@ namespace BOHO.Admin
             get { return BOHODefinition.BOHOToolsOptionDialogPluginId; }
         }
 
-
         public override ToolsOptionsDialogUserControl GenerateUserControl()
         {
             _myUserControl = new BOHOToolsOptionDialogUserControl();
-            System.Xml.XmlNode result = VideoOS.Platform.Configuration.Instance.GetOptionsConfiguration(_myPropertyId, true);
+            System.Xml.XmlNode result =
+                VideoOS.Platform.Configuration.Instance.GetOptionsConfiguration(
+                    _myPropertyId,
+                    true
+                );
             _myUserControl.MyPropValue = GetInnerText(result, "Empty");
             return _myUserControl;
         }
@@ -79,6 +89,4 @@ namespace BOHO.Admin
 
         #endregion
     }
-
-
 }

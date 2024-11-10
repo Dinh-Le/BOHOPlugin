@@ -15,7 +15,7 @@ namespace BOHO.Admin
     {
         /// <summary>
         /// User control to display help page
-        /// </summary>	
+        /// </summary>
         public HelpPage()
         {
             InitializeComponent();
@@ -25,18 +25,11 @@ namespace BOHO.Admin
         /// Display information from or about the Item selected.
         /// </summary>
         /// <param name="item"></param>
-        public override void Init(Item item)
-        {
-
-        }
+        public override void Init(Item item) { }
 
         /// <summary>
         /// Close any session and release any resources used.
         /// </summary>
-        public override void Close()
-        {
-
-        }
-
+        public override void Close() { }
     }
 }

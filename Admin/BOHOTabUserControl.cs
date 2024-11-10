@@ -25,7 +25,10 @@ namespace BOHO.Admin
             textBox1.Text = "";
             textBox2.Text = "";
 
-            _associatedProperties = Configuration.Instance.GetAssociatedProperties(_associatedItem, BOHODefinition.BOHOTabPluginId);
+            _associatedProperties = Configuration.Instance.GetAssociatedProperties(
+                _associatedItem,
+                BOHODefinition.BOHOTabPluginId
+            );
 
             if (_associatedProperties.Properties.ContainsKey("Property1"))
                 textBox1.Text = _associatedProperties.Properties["Property1"];

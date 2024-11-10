@@ -42,7 +42,13 @@ namespace BOHO.Application.ViewModel
             set => SetProperty(ref _ruleNameEnabled, value);
         }
 
-        private Core.Entities.Device _selectedDevice = new() { ID = -1, Name = "Chọn camera", IsPTZ = false };
+        private Core.Entities.Device _selectedDevice =
+            new()
+            {
+                ID = -1,
+                Name = "Chọn camera",
+                IsPTZ = false,
+            };
         public Core.Entities.Device SelectedDevice
         {
             get => _selectedDevice;
@@ -138,8 +144,8 @@ namespace BOHO.Application.ViewModel
                     Device = device,
                     Rules = rules,
                     ViewItemInstanceFQID = ViewItemInstanceFQID,
-                    WindowFQID = WindowFQID
-                }
+                    WindowFQID = WindowFQID,
+                },
             };
 
             EnvironmentManager.Instance.SendMessage(message);
@@ -181,7 +187,7 @@ namespace BOHO.Application.ViewModel
             EnvironmentManager.Instance.SendMessage(
                 new Message($"/device/{this.SelectedDevice.ID}/bounding_visibility")
                 {
-                    Data = this.BoundingBoxEnabled
+                    Data = this.BoundingBoxEnabled,
                 }
             );
         }
@@ -198,7 +204,7 @@ namespace BOHO.Application.ViewModel
                 .Instance.SendMessage(
                     new Message($"/device/{this.SelectedDevice.ID}/rule_visibility")
                     {
-                        Data = this.RuleEnabled
+                        Data = this.RuleEnabled,
                     }
                 )
                 .OfType<Task>()
@@ -218,7 +224,7 @@ namespace BOHO.Application.ViewModel
             EnvironmentManager.Instance.SendMessage(
                 new Message($"/device/{this.SelectedDevice.ID}/rule_name_visibility")
                 {
-                    Data = this.RuleNameEnabled
+                    Data = this.RuleNameEnabled,
                 }
             );
         }

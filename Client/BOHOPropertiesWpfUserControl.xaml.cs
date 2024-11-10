@@ -36,7 +36,7 @@ namespace BOHO.Client
         #region Initialization & Dispose
 
         /// <summary>
-        /// This class is created by the ViewItemManager.  
+        /// This class is created by the ViewItemManager.
         /// </summary>
         /// <param name="viewItemManager"></param>
         public BOHOPropertiesWpfUserControl(BOHOViewItemManager viewItemManager)
@@ -59,9 +59,7 @@ namespace BOHO.Client
         /// <summary>
         /// Perform any cleanup stuff and event -=
         /// </summary>
-        public override void Close()
-        {
-        }
+        public override void Close() { }
 
         /// <summary>
         /// We have some configuration from the server, that the user can choose from.
@@ -100,6 +98,7 @@ namespace BOHO.Client
     internal class ComboBoxNode
     {
         internal Item Item { get; private set; }
+
         internal ComboBoxNode(Item item)
         {
             Item = item;
